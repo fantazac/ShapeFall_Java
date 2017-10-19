@@ -1,0 +1,58 @@
+1413816886966	Copy file
+1413816890316	Delete element
+1413816916643	Delete element
+1413816986394	Copy file
+1413816989634	Copy file
+1413816992335	Copy file
+1413816997405	Copy file
+1413816999606	Delete element
+1413817001966	Delete element
+1413817003476	Delete element
+1413817005646	Delete element
+1413817030848	Copy file
+1413817032998	Delete element
+1413817546386	Delete element
+1413817549896	Delete element
+1413817551976	Delete element
+1413817554147	Delete element
+1413817556657	Delete element
+1413817558557	Delete element
+1413817688752	Delete element
+1413817692172	Delete element
+1413817694602	Delete element
+1413817871197	Delete element
+1413817873047	Delete element
+1413817874507	Delete element
+1413817876217	Delete element
+1413817877817	Delete element
+1413817879447	Delete element
+1413892328370	Rename method 'removeMenuButton'
+1413892336351	Rename method 'removePauseButton'
+1413892344161	Rename method 'removeControlsButton'
+1413892354243	Rename method 'removeSettingsButton'
+1413892365294	Rename method 'removeDifficultyButton'
+1413892374196	Rename method 'removeAudioButton'
+1413892380746	Rename method 'removeSoundsButton'
+1413892388807	Rename method 'removeMusicButton'
+1413892394308	Rename method 'removeHighscoreButton'
+1413892405879	Rename method 'removePauseSettingsButton'
+1413892412640	Rename method 'removeColorsButton'
+1413892425511	Rename method 'removeShapeButton'
+1413892432032	Rename method 'removeGameOverButton'
+1413892439053	Rename method 'setPauseButtonOnTop'
+1413892444394	Rename method 'setGameOverButtonOnTop'
+1413899990961	Rename field 'textDimension'
+1413900071841	Rename field 'textWidth'
+1413900076391	Rename field 'textHeight'
+1413902606865	Rename field 'powerOrbWidth'
+1413921042762	Delete element
+1413922374939	Rename field 'distanceOfBarFromSides'
+1413922397272	Rename field 'initialistanceOfBarFromRightSide'
+1413999390615	Rename field 'optionWidth'
+1413999399466	Rename field 'optionHeight'
+1413999419107	Rename field 'optionWidth1'
+1414080074889	Rename field 'furby1s'
+1414080090895	Rename field 'furbyPOs'
+1414080104966	Rename field 'furby1'
+1414080130519	Rename field 'furbyPO'
+1414080141673	Rename field 'furbys'

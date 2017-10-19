@@ -1,0 +1,59 @@
+Hello! Thanks for trying out ShapeFall!
+
+**IMPORTANT** Keep the files as they are and especially where they are. Moving them somewhere else will crash the game. And you don't really want that!
+
+**IMPORTANT#2** This game requires Java Runtime Environment to work.
+
+------------------------------
+
+**EXTREMELY IMPORTANT STEP**
+
+First off, copy the ShapeFall "FOLDER" from this folder and paste it on your C: local disk. This will be used to load some assets that are yet to be implemented into the .jar file itself. This is temporary but required as of now.
+
+------------------------------
+
+To launch the game, click on the "shapefall.jar".
+
+Finished parts of the game: Main Menu, Settings, Controls. All the other parts are placeholders as of now.
+
+You can only use your keyboard and not your mouse.
+
+Goal: Change the color of the bar (at the bottom) to catch the falling shapes
+
+To play: Start --> G (which makes the game start by default)
+
+To pause: P (which makes the game pause by default)
+
+If you have had a 20 shape streak, you can use U (by default) to activate the star power
+
+Controls to change the colors: 1, 2, 3, 4, 5 (by default)
+
+Green = 1
+Red = 2
+Yellow = 3
+Blue = 4
+Magenta (Red-Pinkish) = 5
+
+Colors are the default ones
+
+Now to the settings
+
+Controls: You can choose any letter or number for the 5 colors and to start, pause and use the star power. Press Enter to change.
+
+Difficulty: Easy: 3 colors, shapes fall slowly
+            Normal: 4 colors, shapes fall a little bit faster
+            Expert: 5 colors, shapes fall somewhat fast
+
+Audio: You can delete sandstorm.wav and place a new .wav file of your choice in the ShapeFall/music folder. 
+
+**IMPORTANT** To stop any music, go back to this menu and press 0 then cancel.
+
+**COPYRIGHT** All sounds/musics found in the game files are temporary and will not be in the full release if it ever reaches this point.
+
+Colors: You can choose any of the offered colors for the 5 shapes
+
+Shape: You can choose between squares (by default) or circles.
+
+Have fun, enjoy and make sure to let me know of any comments, ideas, critism or anything related to the design.
+
+Expert (Alex) :)

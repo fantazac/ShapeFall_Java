@@ -1,0 +1,1822 @@
+package Interface;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.LinkedList;
+
+import Menu.AudioButton;
+import Menu.ColorsButton;
+import Menu.ControlsButton;
+import Menu.DifficultyButton;
+import Menu.GameOverButton;
+import Menu.MusicButton;
+import Menu.MenuButton;
+import Menu.PauseButton;
+import Menu.PauseSettingsButton;
+import Menu.SettingsButton;
+import Menu.ShapeButton;
+import Menu.SoundsButton;
+import Objects.Blue;
+import Objects.ComboBar;
+import Objects.GameObject;
+import Objects.Green;
+import Objects.NoteBar;
+import Objects.ObjectId;
+import Objects.Magenta;
+import Objects.Red;
+import Objects.Scoreboard;
+import Objects.Yellow;
+import Save.Music;
+
+public class Handler {
+
+	Game game;
+	
+	//A FAIRE
+	//CHEATS
+	//SOUNDS
+	//STAR POWER
+	//DELAY RESUME GAME AFTER PAUSE
+	
+	//IDEAS
+	//ORBS FROM RIGHT END GET TO COMBOBAR THROUGH A TUBE
+	//STAR POWER EMPTIES THE TUBE
+	//NOTE STREAK = POINTS GOT (OSU TYPE)
+	//SET AMOUNT OF MISSES (EX: AFTER 30, BAR IS DEAD), SO CANNOT PUT BACK THE BAR BIGGER
+	//REDUCE BAR PROGRESSIVELY, NOT AT ONCE
+	
+	//0 = Main Menu
+	//1 = Game
+	//2 = Pause
+	//3 = Settings
+	//4 = Controls (Controls Menu and Change Key, manage it in KeyInput and ControlsButton)
+	//5 = Difficulty
+	//6 = Audio
+	//7 = Sounds
+	//8 = Music
+	//9 = Colors
+	//10 = Shape (Image?)
+	//11 = Extra (GM and stuff)
+	//12 = OTHER OPTION IN MAIN MENU
+	//?? = ???????
+	//13 = Pause: Settings
+	//14 = Game Over
+	int gameState = 0;
+	
+	//interface options in menus
+	int menuOption = 0;
+	
+	int pauseOption = 0;
+	
+	int settingsOption = 0;
+	
+	int controlsOption = 0;
+	
+	int difficultyOption = 0;
+	
+	int audioOption = 0;
+	
+	int soundsOption = 0;
+	
+	int musicOption = 0;
+	
+	int colorsOption = 0;
+	
+	int colorSelectionOption = 0;
+	
+	int shapeOption = 0;
+	
+	int pauseSettingsOption = 0;
+	
+	int gameOverOption = 0;
+	
+	//timer to spawn squares
+	int clock = 0;
+	
+	//determines various options in game
+	boolean barIsAlive = false;
+	
+	boolean automatedSpawn = false;
+	
+	boolean generateFallSpeed = false;
+	
+	boolean enableNumbers = false;
+	
+	boolean numbersOverBar = false;
+	
+	boolean reduceBar = false;
+	
+	boolean powerOrbActive = false;
+	
+	//determines the position of numberOverBar
+	int countMsg;
+	
+	//default fallSpeed
+	float YSpeed = 1;
+	
+	//amount of points
+	int points = 0;
+	
+	int maxPoints = 2000000000;
+	
+	int minPoints = -999999999;
+	
+	//determines what color was last spawned
+	int previousType;
+	
+	//determines the current note streak
+	int noteStreak;
+	
+	int maxNoteStreak = 20;
+	
+	//delay between square spawns
+	int spawnTime = 60;
+	
+	//difficulty of the game
+	int difficulty;
+	
+	//initial width of the bar
+	float initialWidth;
+
+	//initial x position of the bar
+	float initialX;
+	
+	//determines if the PauseButton is drawn on top of other objects
+	boolean pauseOnTop = true;
+	
+	//determines if the GameOverButton is drawn on top of other objects
+	boolean gameOverOnTop = true;
+	
+	//determines if the ColorsButton is in the colorSelection state
+	boolean colorSelection = false;
+	
+	//determines if the ControlsButton is in the controlSelection state
+	boolean controlSelection = false;
+	
+	//small delay before checking if pauseOnTop
+	int pauseOnTopTick = 0;
+	
+	//small delay before checking if gameOverOnTop
+	int gameOverOnTopTick = 0;
+	
+	//colors of squares
+	Color color1;
+	
+	Color color2;
+
+	Color color3;
+	
+	Color color4;
+	
+	Color color5;
+	
+	//controls
+	int control1;
+	
+	int control2;
+	
+	int control3;
+	
+	int control4;
+	
+	int control5;
+	
+	int controlStart;
+	
+	int controlPause;
+	
+	//selected control when changing
+	int selectedControl;
+	
+	//current music string name
+	String mainMusic;
+	
+	//default sound when a square is caught
+	String squareSound = "squaresound.wav";
+	
+	//default sound when a square is missed
+	String failSound = "failsound.wav";
+	
+	//default sound when losing
+	String losingSound = "losingsound.wav";
+	
+	//current playing music
+	Sound music;
+	
+	//current playing sound when a square hits the bar
+	Sound hitSound;
+	
+	//default color of the bar
+	Color barColor = Color.GRAY;
+	
+	//list of all the existing GameObject
+	public LinkedList<GameObject> object = new LinkedList<GameObject>();
+	
+	//CURRENT GAME
+	public LinkedList<GameObject> currentGame = new LinkedList<GameObject>();
+	
+	//list of all the possible colors (8)
+	public LinkedList<Color> color = new LinkedList<Color>(); 
+	
+	//list of the current 5 selected colors
+	public LinkedList<Color> currentColor = new LinkedList<Color>();
+	
+	//list of the available colors to change to
+	public LinkedList<Color> availableColor = new LinkedList<Color>();
+	
+	//list of the 5 default colors (green, red, yellow, blue, magenta)
+	public LinkedList<Color> defaultColor = new LinkedList<Color>();
+	
+	//list of all possible controls
+	public LinkedList<Integer> control = new LinkedList<Integer>();
+	
+	//list of the current 7 controls
+	public LinkedList<Integer> currentControl = new LinkedList<Integer>();
+	
+	//list of all the available controls
+	public LinkedList<Integer> availableControl = new LinkedList<Integer>();	
+	
+	//list of the 7 default controls (1, 2, 3, 4, 5, G, P)
+	public LinkedList<Integer> defaultControl = new LinkedList<Integer>();
+	
+	//used in the render method to go through all GameObject
+	private GameObject tempObject;
+	
+	public Handler(Game game){
+		this.game = game;
+		initialWidth = 330;
+		initialX = getGameWidth() - initialWidth - 65;
+		setMainMenu();
+		try {
+			difficulty = getDifficulty();
+			System.out.println("Difficulty: " + difficulty);
+			
+			mainMusic = getMusic();
+			if(mainMusic != null){
+				if(mainMusic.length() < 5){
+					new Music();
+					mainMusic = getMusic();
+				}
+				setInitialMusicOption();
+				music = new Sound(mainMusic, this, true);
+				System.out.println("Song Name: " + mainMusic);
+			}
+			else{
+				System.out.println("No music currently playing.");
+			}
+			System.out.println("Current Shape: " + getShape(true));
+			
+			color1 = getColorValue(getColors(0));
+			color2 = getColorValue(getColors(1));
+			color3 = getColorValue(getColors(2));
+			color4 = getColorValue(getColors(3));
+			color5 = getColorValue(getColors(4));
+			setDefaultColorList(defaultColor);
+			System.out.println("Current Colors: " + getColorName(color1) + ", " + getColorName(color2) + ", " + getColorName(color3) + ", "
+					 + getColorName(color4) + ", " + getColorName(color5));
+			
+			control1 = getControls(0);
+			control2 = getControls(1);
+			control3 = getControls(2);
+			control4 = getControls(3);
+			control5 = getControls(4);
+			controlStart = getControls(5);
+			controlPause = getControls(6);
+			setDefaultControlList(defaultControl);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		setColorList(color);
+		setControlList(control);
+	}
+	
+	public void tick(){
+		clock++;
+		
+		for(int i = 0; i < object.size(); i++){
+			object.get(i).tick(object);
+		}
+		
+		if(clock >= spawnTime && barIsAlive && automatedSpawn){
+			summon();
+			clock = 0;
+		}
+		
+		if(!pauseOnTop){
+			pauseOnTopTick++;
+			if(pauseOnTopTick >= 1){
+				pauseOnTop = true;
+				pauseOnTopTick = 0;
+				setPauseButtonOnTop();
+			}
+		}
+		
+		if(!gameOverOnTop){
+			gameOverOnTopTick++;
+			if(gameOverOnTopTick >= 1){
+				gameOverOnTop = true;
+				gameOverOnTopTick = 0;
+				setGameOverButtonOnTop();
+			}
+		}
+	}
+	
+	public void render(Graphics g){
+		
+		for(int i = 0; i < object.size(); i++){
+			tempObject = object.get(i);
+			//active les methodes render(g) pour tous les GameObject
+			tempObject.render(g);
+		}
+	}
+	
+	public float getGameHeight(){
+		return game.getHeight();
+	}
+	
+	public float getGameWidth(){
+		return game.getWidth();
+	}
+	
+	//determines which game state is active
+	public void setGameState(int gs){
+		if(gs == 0){
+			System.out.println("Main Menu");
+		}
+		if(gs == 1){
+			System.out.println("Game Start");
+		}
+		if(gs == 2){
+			System.out.println("Game Paused");
+		}
+		if(gs == 3){
+			System.out.println("Settings Menu");
+		}
+		if(gs == 4){
+			System.out.println("Controls Menu");
+		}
+		if(gs == 5){
+			System.out.println("Difficulty Menu");
+		}
+		if(gs == 6){
+			System.out.println("Audio Menu");
+		}
+		if(gs == 7){
+			System.out.println("Sounds Menu");
+		}
+		if(gs == 8){
+			System.out.println("Music Menu");
+		}
+		if(gs == 9){
+			System.out.println("Colors Menu");
+		}
+		if(gs == 10){
+			System.out.println("Shape Menu");
+		}
+		if(gs == 11){
+			System.out.println("Game State 11: Not Created Yet");
+		}
+		if(gs == 12){
+			System.out.println("Game State 12: Not Created Yet");
+		}
+		if(gs == 13){
+			System.out.println("Pause Settings");
+		}
+		if(gs == 14){
+			System.out.println("Game Over");
+		}
+		if(gs < 0 || gs > 14){
+			gs = 0;
+			setMainMenu();
+			System.out.println("Invalid Game State: Returning to Main Menu.");
+		}
+		gameState = gs;
+	}
+	
+	//returns the active game state
+	public int getGameState(){
+		return gameState;
+	}
+	
+	//changes active game state to "Main Menu"
+	public void setMainMenu(){
+		reset();
+		setGameState(0);
+		addObject(new MenuButton(570, 100, this, ObjectId.MenuButton));
+	}
+	
+	//changes active game state to "Game"
+	public void setGame(){
+		reset();
+		setGameState(1);
+		spawnBar();
+	}
+	
+	//changes back active game state to "Game"
+	public void resumeGame(){
+		removePauseButton();
+		setGameState(1);
+	}
+	
+	//changes active game state to "Pause Menu"
+	public void setPause(){
+		removePauseSettingsButton();
+		setGameState(2);
+		addObject(new PauseButton(getGameWidth()/2-150, 100, this, ObjectId.PauseButton));
+		pauseOnTop = false;
+	}
+	
+	//changes active game state to "Settings Menu"
+	public void setSettings(){
+		setMenu(3);
+		addObject(new SettingsButton(570, 100, this, ObjectId.SettingsButton));
+	}
+	
+	//changes active game state to "Controls Menu"
+	public void setControls(){
+		setMenu(4);
+		addObject(new ControlsButton(570, 100, this, ObjectId.ControlsButton));
+	}
+	
+	//changes active game state to "Settings Menu: Change Difficulty"
+	public void setDifficulty(){
+		setMenu(5);
+		try {
+			setDifficultyOption(getDifficulty()-1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		addObject(new DifficultyButton(570, 100, this, ObjectId.DifficultyButton));
+	}
+	
+	//changes active game state to "Settings Menu: Audio"
+	public void setAudio(){
+		setMenu(6);
+		addObject(new AudioButton(570, 100, this, ObjectId.AudioButton));
+	}
+	
+	//changes active game state to "Settings Menu: Change Game Sounds"
+	public void setSounds(){
+		setMenu(7);
+		addObject(new SoundsButton(570, 100, this, ObjectId.SoundsButton));
+	}
+	
+	//changes active game state to "Settings Menu: Change Game Music"
+	public void setMusic(){
+		setMenu(8);
+		addObject(new MusicButton(570, 100, this, ObjectId.MusicButton));
+	}
+	
+	//changes active game state to "Settings Menu: Change Colors"
+	public void setColors(){
+		setMenu(9);
+		addObject(new ColorsButton(405, 100, this, ObjectId.ColorsButton));
+	}
+	
+	//changes active game state to "Settings Menu: Change Shape"
+	public void setShape(){
+		setMenu(10);
+		try {
+			setShapeOption(getShape()-1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		addObject(new ShapeButton(570, 100, this, ObjectId.ShapeButton));
+	}
+	
+	//changes active game state to "Pause Menu: Settings Menu"
+	public void setPauseSettings(){
+		removePauseButton();
+		setGameState(13);
+		addObject(new PauseSettingsButton(getGameWidth()/2-150, 100, this, ObjectId.PauseSettingsButton));
+	}
+	
+	//changes active game state to "Game Over"
+	public void setGameOver(){
+		removePauseButton();
+		barIsAlive = false;
+		removeBar();
+		setGameState(14);
+		addObject(new GameOverButton(getGameWidth()/2-150, 100, this, ObjectId.GameOverButton));
+		gameOverOnTop = false;
+	}
+	
+	//removes the active Menu Button
+	public void removeMenuButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.MenuButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Pause Button
+	public void removePauseButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.PauseButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Controls Button
+	public void removeControlsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.ControlsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Settings Button
+	public void removeSettingsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.SettingsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Difficulty Button
+	public void removeDifficultyButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.DifficultyButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Audio Button
+	public void removeAudioButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.AudioButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Sounds Button
+	public void removeSoundsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.SoundsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Music Button
+	public void removeMusicButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.MusicButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Pause Settings Button
+	public void removePauseSettingsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.PauseSettingsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Colors Button
+	public void removeColorsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.ColorsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Shape Button
+	public void removeShapeButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.ShapeButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Game Over Button
+	public void removeGameOverButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.GameOverButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//moves the active Pause Button to be drawn on top
+	public void setPauseButtonOnTop(){
+		for(int i = object.size()-1; i < object.size(); i++){
+			if(findEntity(ObjectId.PauseButton) && object.get(i).getId() != ObjectId.PauseButton){
+				removePauseButton();
+				addObject(new PauseButton(getGameWidth()/2-150, 100, this, ObjectId.PauseButton));
+				System.out.println("Pause Button placed on top.");
+			}
+		}
+	}
+	
+	//moves the active Game Over Button to be drawn on top
+	public void setGameOverButtonOnTop(){
+		for(int i = object.size()-1; i < object.size(); i++){
+			if(findEntity(ObjectId.GameOverButton) && object.get(i).getId() != ObjectId.GameOverButton){
+				removeGameOverButton();
+				addObject(new GameOverButton(getGameWidth()/2-150, 100, this, ObjectId.GameOverButton));
+				System.out.println("Game Over Button placed on top.");
+			}
+		}
+	}
+	
+	//determines which menu option is highlighted for "Main Menu"
+	public void setMenuOption(int mo){
+		if(mo > 3){
+			mo = 3;
+		}
+		if(mo < 0){
+			mo = 0;
+		}
+		menuOption = mo;
+	}
+	
+	//determines which menu option is highlighted for "Pause Menu"
+	public void setPauseOption(int po){
+		if(po > 3){
+			po = 3;
+		}
+		if(po < 0){
+			po = 0;
+		}
+		pauseOption = po;
+	}
+	
+	//determines which menu option is highlighted for "Settings Menu"
+	public void setSettingsOption(int so){
+		if(so > 6){
+			so = 6;
+		}
+		if(so < 0){
+			so = 0;
+		}
+		settingsOption = so;
+	}
+	
+	//determines which menu option is highlighted for "Controls Menu"
+	public void setControlsOption(int co){
+		if(co > 9){
+			co = 9;
+		}
+		if(co < 0){
+			co = 0;
+		}
+		controlsOption = co;
+	}
+	
+	//determines which menu option is highlighted for "Settings Menu: Change Difficulty"
+	public void setDifficultyOption(int dop){
+		if(dop > 3){
+			dop = 3;
+		}
+		if(dop < 0){
+			dop = 0;
+		}
+		difficultyOption = dop;
+	}
+	
+	//determines which menu option is highlighted for "Settings Menu: Audio"
+	public void setAudioOption(int ao){
+		if(ao > 3){
+			ao = 3;
+		}
+		if(ao < 0){
+			ao = 0;
+		}
+		audioOption = ao;
+	}
+	
+	//determines which menu option is highlighted for "Settings Menu: Sounds"
+	public void setSoundsOption(int so){
+		if(so > 3){
+			so = 3;
+		}
+		if(so < 0){
+			so = 0;
+		}
+		soundsOption = so;
+	}
+	
+	//determines which menu option is highlighted for "Settings Menu: Change Music"
+	public void setMusicOption(int gso){
+		if(gso > 3){
+			gso = 3;
+		}
+		if(gso < 0){
+			gso = 0;
+		}
+		musicOption = gso;
+	}
+	
+	//determines which menu option is highlighted for "Pause Settings Menu"
+	public void setPauseSettingsOption(int pso){
+		if(pso > 1){
+			pso = 1;
+		}
+		if(pso < 0){
+			pso = 0;
+		}
+		pauseSettingsOption = pso;
+	}
+	
+	//determines which menu option is highlighted for "Colors Menu"
+	public void setColorsOption(int co){
+		if(co > 7){
+			co = 7;
+		}
+		if(co < 0){
+			co = 0;
+		}
+		colorsOption = co;
+	}
+	
+	//determines which menu option is highlighted for "Colors Menu: Selection"
+	public void setColorSelectionOption(int cso){
+		if(cso > 3){
+			cso = 3;
+		}
+		if(cso < 0){
+			cso = 0;
+		}
+		colorSelectionOption = cso;
+	}
+	
+	//determines which menu option is highlighted for "Shape Menu"
+	public void setShapeOption(int so){
+		if(so > 2){
+			so = 2;
+		}
+		if(so < 0){
+			so = 0;
+		}
+		shapeOption = so;
+	}
+	
+	//determines which menu option is highlighted for "Game Over"
+	public void setGameOverOption(int goo){
+		if(goo > 1){
+			goo = 1;
+		}
+		if(goo < 0){
+			goo = 0;
+		}
+		gameOverOption = goo;
+	}
+	
+	//sets the initial musicOption
+	public void setInitialMusicOption(){
+		if(mainMusic.equals("pokemon.wav")){
+			musicOption = 0;
+		}
+		else if(mainMusic.equals("ghostbusters.wav")){
+			musicOption = 1;
+		}
+		else if(mainMusic.equals("trololol.wav")){
+			musicOption = 2;
+		}
+	}
+	
+	//returns the highlighted menuOption
+	public int getMenuOption(){
+		return menuOption;
+	}
+	
+	//returns the highlighted pauseOption
+	public int getPauseOption(){
+		return pauseOption;
+	}
+	
+	//returns the highlighted controlsOption
+	public int getControlsOption(){
+		return controlsOption;
+	}
+	
+	//returns the highlighted settingsOption
+	public int getSettingsOption(){
+		return settingsOption;
+	}
+	
+	//returns the highlighted difficultyOption
+	public int getDifficultyOption(){
+		return difficultyOption;
+	}
+	
+	//returns the highlighted audioOption
+	public int getAudioOption(){
+		return audioOption;
+	}
+	
+	//returns the highlighted soundsOption
+	public int getSoundsOption(){
+		return soundsOption;
+	}
+		
+	//returns the highlighted musicOption
+	public int getMusicOption(){
+		return musicOption;
+	}
+	
+	//returns the highlighted pauseSettingsOption
+	public int getPauseSettingsOption(){
+		return pauseSettingsOption;
+	}
+	
+	//returns the highlighted colorsOption
+	public int getColorsOption(){
+		return colorsOption;
+	}
+	
+	//returns the highlighted colorSelectionOption
+	public int getColorSelectionOption(){
+		return colorSelectionOption;
+	}
+	
+	//returns the highlighted shapeOption
+	public int getShapeOption(){
+		return shapeOption;
+	}
+	
+	//returns the highlighted gameOverOption
+	public int getGameOverOption(){
+		return gameOverOption;
+	}
+	
+	//gets the difficulty from the Difficulty.txt file
+	public int getDifficulty() throws IOException{
+		int diff;
+		String word = "";
+		
+		BufferedReader br = new BufferedReader(new FileReader("Difficulty.txt"));
+		word = br.readLine();
+		diff = Integer.parseInt(word);
+		br.close();
+		
+		if(diff < 1){
+			diff = 1;
+		}
+		
+		if(diff > 3){
+			diff = 3;
+		}
+		
+		return diff;
+	}
+	
+	//gets the shape from the Shape.txt file
+	public int getShape() throws IOException{
+		int diff = 0;
+		String word = "";
+		
+		BufferedReader br = new BufferedReader(new FileReader("Shape.txt"));
+		word = br.readLine();
+		br.close();
+		
+		if(word.equals("square")){
+			diff = 1;
+		}
+		else if(word.equals("circle")){
+			diff = 2;
+		}
+		else{
+			diff = 1;
+			System.out.println("getShape() ERROR");
+		}
+		
+		return diff;
+	}
+	
+	//gets the shape from the Shape.txt file
+	public String getShape(boolean b) throws IOException{
+		String word = "";
+		
+		BufferedReader br = new BufferedReader(new FileReader("Shape.txt"));
+		word = br.readLine();
+		br.close();
+		
+		return word;
+	}
+	
+	//gets the music from the Music.txt file
+	public String getMusic() throws IOException{
+		String word = "";
+		
+		BufferedReader br = new BufferedReader(new FileReader("Music.txt"));
+		word = br.readLine();
+		br.close();
+		
+		return word;
+	}
+	
+	//plays the music
+	public void music(){
+		String s = "";
+		try {
+			s = getMusic();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if(mainMusic == null || !(mainMusic.equals(s))){
+			if(music != null){
+				music.stop();
+			}
+			mainMusic = s;
+			if(mainMusic != null){
+				music = new Sound(mainMusic, this, true);
+				System.out.println("Song Name: " + mainMusic);
+			}
+			else{
+				System.out.println("No music currently playing.");
+			}
+		}
+		else if(mainMusic != null){
+			System.out.println(mainMusic + " is already playing.");
+		}
+	}
+	
+	//plays the Sound when a square is the right color
+	public void squareSound(){
+		hitSound = new Sound(squareSound, this);
+	}
+	
+	//plays the Sound when a square is not the right color
+	public void failSound(){
+		hitSound = new Sound(failSound, this);
+	}
+	
+	//plays the Sound when losing
+	public void losingSound(){
+		hitSound = new Sound(losingSound, this);
+	}
+	
+	//gets the Controls from the Controls.txt file
+	public int getControls(int n) throws IOException{
+		String word = "";
+		BufferedReader br = new BufferedReader(new FileReader("Controls.txt"));
+		for (int i = 0; i < n; i++) 
+		{
+			word = br.readLine();
+		}
+		for (int j = n; j < n+1; j++) 
+		{
+			word = br.readLine();
+		}
+		br.close();
+		
+		return Integer.parseInt(word);
+	}
+	
+	//returns the control for the needed option
+	public int getControl(int c){
+		if(c == 1){
+			return control1;
+		}
+		else if(c == 2){
+			return control2;
+		}
+		else if(c == 3){
+			return control3;
+		}
+		else if(c == 4){
+			return control4;
+		}
+		else if(c == 5){
+			return control5;
+		}
+		else if(c == 6){
+			return controlStart;
+		}
+		else if(c == 7){
+			return controlPause;
+		}
+		else{
+			System.out.println("ERROR getContorl(int): Control number INVALID. Returning control1.");
+		}
+		return control1;
+	}
+	
+	//gives the control the new control
+	public void setControl(int c, int o){
+		if(c == 1){
+			control1 = o;
+		}
+		else if(c == 2){
+			control2 = o;
+		}
+		else if(c == 3){
+			control3 = o;
+		}
+		else if(c == 4){
+			control4 = o;
+		}
+		else if(c == 5){
+			control5 = o;
+		}
+		else if(c == 6){
+			controlStart = o;
+		}
+		else if(c == 7){
+			controlPause = o;
+		}
+		else{
+			System.out.println("ERROR setContorl(int,int)");
+		}
+	}
+	
+	//returns the control value for Texture
+	public int getControlValue(int k){
+		int n = 0;
+		if(k >= 48 && k < 58){
+			n = k - 48;
+		}
+		else if(k >= 65 && k < 101){
+			n = k - 55;
+		}
+		else{
+			System.out.println("getControlValue() ERROR");
+		}
+		return n;
+	}
+	
+	//returns the color number for Texture
+	public int getControlNumber(int c){
+		int n = 1;
+		if(c == control1){
+			n = 1;
+		}
+		else if(c == control2){
+			n = 2;
+		}
+		else if(c == control3){
+			n = 3;
+		}
+		else if(c == control4){
+			n = 4;
+		}
+		else if(c == control5){
+			n = 5;
+		}
+		else if(c == controlStart){
+			n = 6;
+		}
+		else if(c == controlPause){
+			n = 7;
+		}
+		else{
+			System.out.println("getControlNumber() ERROR: returning 1");
+		}
+		return n;
+	}
+	
+	//sets the default control list
+	public void setDefaultControlList(LinkedList<Integer> l){
+		addControl(49, l);
+		addControl(50, l);
+		addControl(51, l);
+		addControl(52, l);
+		addControl(53, l);
+		addControl(71, l);
+		addControl(80, l);
+	}
+	
+	//sets back the controls to what it was before changing them
+	public void setControlsCancel(){
+		try {
+			control1 = getControls(0);
+			control2 = getControls(1);
+			control3 = getControls(2);
+			control4 = getControls(3);
+			control5 = getControls(4);
+			controlStart = getControls(5);
+			controlPause = getControls(6);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//sets back controls to default
+	public void setControlsDefault(){
+		control1 = defaultControl.get(0);
+		control2 = defaultControl.get(1);
+		control3 = defaultControl.get(2);
+		control4 = defaultControl.get(3);
+		control5 = defaultControl.get(4);
+		controlStart = defaultControl.get(5);
+		controlPause = defaultControl.get(6);
+	}
+	
+	//sets the control list
+	public void setControlList(LinkedList<Integer> l){
+		for(int o = 48; o < 58; o++){
+			addControl(o, l);
+		}
+		for(int p = 65; p < 101; p++){
+			addControl(p, l);
+		}
+	} 
+	
+	//sets currentControl list
+	public void setCurrentControlList(){
+		currentControl = new LinkedList<Integer>();
+		addControl(control1, currentControl);
+		addControl(control2, currentControl);
+		addControl(control3, currentControl);
+		addControl(control4, currentControl);
+		addControl(control5, currentControl);
+		addControl(controlStart, currentControl);
+		addControl(controlPause, currentControl);
+	}
+	
+	//sets available controls
+	public void setAvailableControlList(){
+		availableControl = new LinkedList<Integer>();
+		setControlList(availableControl);
+		for(int i = 0; i < control.size(); i++){
+			for(int j = 0; j < currentControl.size(); j++){
+				if(control.get(i) == currentControl.get(j)){
+					for(int k = 0; k < availableControl.size(); k++){
+						if(availableControl.get(k) == control.get(i)){
+							removeControl(k, availableControl);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	//returns if control is available
+	public boolean controlIsAvailable(int c){
+		for(int i = 0; i < availableControl.size(); i++){
+			if(availableControl.get(i) == c){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	//get the selectedControl
+	public int getSelectedControl(){
+		return selectedControl;
+	}
+	
+	//set the selectedControl
+	public void setSelectedControl(int j){
+		selectedControl = j;
+	}
+	
+	//returns true if defaultControl equals the current controls
+	public boolean controlsDefaultOption(){
+		if(defaultControl.get(0) == control1 && defaultControl.get(1) == control2 && defaultControl.get(2) == control3 && defaultControl.get(3) == control4 
+				&& defaultControl.get(4) == control5 && defaultControl.get(5) == controlStart && defaultControl.get(6) == controlPause){
+			return true;
+		}
+		return false;
+	}	
+	
+	//gets the Colors from the Colors.txt file
+	public int getColors(int n) throws IOException{
+		String word = "";
+		BufferedReader br = new BufferedReader(new FileReader("Colors.txt"));
+		for (int i = 0; i < n; i++) 
+		{
+			word = br.readLine();
+		}
+		for (int i = n; i < n + 1; i++) 
+		{
+			word = br.readLine();
+			
+		}
+		br.close();
+		
+		return Integer.parseInt(word);
+	}
+	
+	//returns the color of the needed square
+	public Color getControlsColor(int c){
+		if(c == 1){
+			return color1;
+		}
+		else if(c == 2){
+			return color2;
+		}
+		else if(c == 3){
+			return color3;
+		}
+		else if(c == 4){
+			return color4;
+		}
+		else if(c == 5){
+			return color5;
+		}
+		else if(c == 6 || c == 7){
+			return Color.CYAN;
+		}
+		else{
+			System.out.println("ERROR getControlsColor(int): Control number INVALID. Returning color1.");
+		}
+		return color1;
+	}
+	
+	//gives a color for a int value
+	public Color getColorValue(int i){
+		if(i == 1){
+			return Color.GREEN;
+		}
+		else if(i == 2){
+			return Color.RED;
+		}
+		else if(i == 3){
+			return Color.YELLOW;
+		}
+		else if(i == 4){
+			return Color.BLUE;
+		}
+		else if(i == 5){
+			return Color.MAGENTA;
+		}
+		else if(i == 6){
+			return Color.ORANGE;
+		}
+		else if(i == 7){
+			return Color.CYAN;
+		}
+		else if(i == 8){
+			return Color.PINK;
+		}
+		
+		return null;
+	}
+	
+	//returns the color list
+	public LinkedList<Color> getColorList(){
+		return color;
+	}
+	
+	//returns the color of the needed square
+	public Color getColor(int c){
+		if(c == 1){
+			return color1;
+		}
+		else if(c == 2){
+			return color2;
+		}
+		else if(c == 3){
+			return color3;
+		}
+		else if(c == 4){
+			return color4;
+		}
+		else if(c == 5){
+			return color5;
+		}
+		else{
+			System.out.println("ERROR getColor(int): Color number INVALID. Returning color1.");
+		}
+		return color1;
+	}
+	
+	//returns the color number for Texture
+	public int getColorNumber(Color c){
+		int n = 0;
+		if(c == Color.GREEN){
+			n = 0;
+		}
+		else if(c == Color.RED){
+			n = 1;
+		}
+		else if(c == Color.YELLOW){
+			n = 2;
+		}
+		else if(c == Color.BLUE){
+			n = 3;
+		}
+		else if(c == Color.MAGENTA){
+			n = 4;
+		}
+		else if(c == Color.ORANGE){
+			n = 5;
+		}
+		else if(c == Color.CYAN){
+			n = 6;
+		}
+		else if(c == Color.PINK){
+			n = 7;
+		}
+		else{
+			System.out.println("getColorNumber() ERROR");
+		}
+		return n;
+	}
+	
+	//returns the color number for Texture
+	public String getColorName(Color c){
+		String n = "";
+		if(c == Color.GREEN){
+			n = "Green";
+		}
+		else if(c == Color.RED){
+			n = "Red";
+		}
+		else if(c == Color.YELLOW){
+			n = "Yellow";
+		}
+		else if(c == Color.BLUE){
+			n = "Blue";
+		}
+		else if(c == Color.MAGENTA){
+			n = "Magenta";
+		}
+		else if(c == Color.ORANGE){
+			n = "Orange";
+		}
+		else if(c == Color.CYAN){
+			n = "Cyan";
+		}
+		else if(c == Color.PINK){
+			n = "Pink";
+		}
+		else{
+			System.out.println("getColorName() ERROR");
+		}
+		return n;
+	}
+	
+	//sets a color to one of the 5
+	public void setColor(int c, Color col){
+		if(c == 0){
+			color1 = col;
+		}
+		if(c == 1){
+			color2 = col;
+		}
+		if(c == 2){
+			color3 = col;
+		}
+		if(c == 3){
+			color4 = col;
+		}
+		if(c == 4){
+			color5 = col;
+		}
+	}
+	
+	//sets back the colors to what it was before changing them
+	public void setColorsCancel(){
+		try {
+			color1 = getColorValue(getColors(0));
+			color2 = getColorValue(getColors(1));
+			color3 = getColorValue(getColors(2));
+			color4 = getColorValue(getColors(3));
+			color5 = getColorValue(getColors(4));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//sets back colors to default
+	public void setColorsDefault(){
+		color1 = defaultColor.get(0);
+		color2 = defaultColor.get(1);
+		color3 = defaultColor.get(2);
+		color4 = defaultColor.get(3);
+		color5 = defaultColor.get(4);
+	}
+	
+	//returns true if defaultColor equals the current colors
+	public boolean colorsDefaultOption(){
+		if(defaultColor.get(0) == color1 && defaultColor.get(1) == color2 && defaultColor.get(2) == color3 && defaultColor.get(3) == color4 && defaultColor.get(4) == color5){
+			return true;
+		}
+		return false;
+	}
+	
+	//sets the color list
+	public void setColorList(LinkedList<Color> l){
+		addColor(Color.GREEN, l);
+		addColor(Color.RED, l);
+		addColor(Color.YELLOW, l);
+		addColor(Color.BLUE, l);
+		addColor(Color.MAGENTA, l);
+		addColor(Color.ORANGE, l);
+		addColor(Color.CYAN, l);
+		addColor(Color.PINK, l);
+	} 
+	
+	//sets the default color list
+	public void setDefaultColorList(LinkedList<Color> l){
+		addColor(Color.GREEN, l);
+		addColor(Color.RED, l);
+		addColor(Color.YELLOW, l);
+		addColor(Color.BLUE, l);
+		addColor(Color.MAGENTA, l);
+	}
+	
+	//sets currentColor list
+	public void setCurrentColorList(){
+		currentColor = new LinkedList<Color>();
+		addColor(color1, currentColor);
+		addColor(color2, currentColor);
+		addColor(color3, currentColor);
+		addColor(color4, currentColor);
+		addColor(color5, currentColor);
+	}
+	
+	//sets available colors
+	public void setAvailableColorList(){
+		availableColor = new LinkedList<Color>();
+		setColorList(availableColor);
+		for(int i = 0; i < color.size(); i++){
+			for(int j = 0; j < currentColor.size(); j++){
+				if(color.get(i) == currentColor.get(j)){
+					for(int k = 0; k < availableColor.size(); k++){
+						if(availableColor.get(k) == color.get(i)){
+							removeColor(color.get(i), availableColor);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	//get if controlSelection is active
+	public boolean getControlSelection(){
+		return controlSelection;
+	}
+	
+	//get if controlSelection is active
+	public void setControlSelection(boolean b){
+		controlSelection = b;
+	}
+	
+	//get if colorSelection is active
+	public boolean getColorSelection(){
+		return colorSelection;
+	}
+	
+	//get if colorSelection is active
+	public void setColorSelection(boolean b){
+		colorSelection = b;
+	}
+	
+	//spawns the bar and the combo bar
+	public void spawnBar(){
+		addObject(new NoteBar(initialX, getGameHeight()*8/10+15, this, ObjectId.NoteBar));
+		addObject(new ComboBar(getGameWidth()-57, 250+200, this, ObjectId.ComboBar));
+		addObject(new Scoreboard(0, 0, this, ObjectId.Scoreboard));
+		barIsAlive = true;
+	}
+	
+	//allows to find out if a precise entity exists (OBJECT)
+	public boolean findEntity(GameObject obj){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i) == obj){
+				System.out.println("Entity is alive.");
+				return true;
+			}
+		}
+		System.out.println("Entity does not exist.");
+		return false;
+	}
+	
+	//allows to find out if a precise entity exists (ID)
+	public boolean findEntity(ObjectId id){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == id){
+				System.out.println("Entity is alive.");
+				return true;
+			}
+		}
+		System.out.println("Entity does not exist.");
+		return false;
+	}
+	
+	//destroy an entity
+	public void destroyEntity(GameObject obj){
+		removeObject(obj);
+		System.out.println("Object has been removed.");
+	}
+	
+	//determines if a bar exists
+	public boolean findBar(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				System.out.println("The bar already exists.");
+				barIsAlive = true;
+				return true;
+			}
+		}
+		System.out.println("The bar has been created.");
+		return false;
+	}
+	
+	//removes the NoteBar
+	public void removeBar(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//determines the bar's width
+	public float getBarWidth(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				return object.get(i).getWidth();
+			}
+		}
+		return 0;
+	}
+	
+	//determines the bar's height
+	public float getBarHeight(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				return object.get(i).getHeight();
+			}
+		}
+		return 0;
+	}
+	
+	//sets bar width
+	public void setBarWidth(float w){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				object.get(i).setWidth(object.get(i).getWidth()+w);
+				if(object.get(i).getWidth() >= getGameWidth()-500){
+					object.get(i).setWidth(getGameWidth()-500);
+				}
+			}
+		}
+	}
+	
+	//sets bar x
+	public void setBarX(float x){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				object.get(i).setX(object.get(i).getX()+x);
+				if(object.get(i).getX() <= initialX){
+					object.get(i).setX(initialX);
+				}
+			}
+		}
+	}
+	
+	//determines the bar's x
+	public float getBarX(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				return object.get(i).getX();
+			}
+		}
+		return 0;
+	}
+	
+	//determines the bar's y
+	public float getBarY(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				return object.get(i).getY();
+			}
+		}
+		return 0;
+	}
+	
+	//get the bar initial width
+	public float getInitialWidth(){
+		return initialWidth;
+	}
+	
+	//set the bar initial x
+	public void setInitialX(float x3){
+		initialX = x3;
+	}
+	
+	//get the bar initial x
+	public float getInitialX(){
+		return initialX;
+	}
+	
+	//can reduce the width of the bar
+	public boolean canReduceBar(){
+		return reduceBar;
+	}
+	
+	//can do the power orbs
+	public boolean powerOrbActive(){
+		return powerOrbActive;
+	}
+	
+	//gives the color of the bar
+	public Color getBarColor(){
+		return barColor;
+	}
+	
+	//sets the color of the bar
+	public void setBarColor(Color color){
+		barColor = color;
+	}
+	
+	//gets countMsg
+	public int getCountMsg(){
+		return countMsg;
+	}
+	
+	//countMsg iteration
+	public void setCountMsg(){
+		countMsg++;
+	}
+	
+	//gets noteStreak
+	public int getNoteStreak(){
+		return noteStreak;
+	}
+	
+	//noteStreak iteration
+	public void setNoteStreak(int i){
+		noteStreak += i;
+		if(getNoteStreak() >= 20 && getBarWidth() < initialWidth && canReduceBar()){
+			setNoteStreak(-getNoteStreak());
+			setBarWidth(30);
+			setBarX(-15);
+		}
+		else if(getNoteStreak() >= 20){
+			noteStreak = 20;
+		}
+	}
+	
+	//summons a square
+	public void summon(int type){
+		if(gameState == 1){
+			int r = (int)((Math.random()*(getBarWidth()-40))+getBarX()+10);
+			float fallSpeed = YSpeed;
+			if(generateFallSpeed){
+				if(difficulty == 1){
+					fallSpeed = (float)(Math.random())+(YSpeed);
+				}
+				else if(difficulty == 2){
+					fallSpeed = (float)(Math.random()*1.25)+(YSpeed);
+				}
+				else if(difficulty == 3){
+					fallSpeed = (float)(Math.random()*2.5)+(YSpeed);
+				}
+				else{
+					System.out.println("ERROR: Difficulty for summon(int) is incorrect");
+				}
+			}
+			
+			if(type == 0){
+				addObject(new Green(r, 0, fallSpeed, color1, this, ObjectId.Green));
+			}
+			else if(type == 1){
+				addObject(new Red(r, 0, fallSpeed, color2, this, ObjectId.Red));
+			}
+			else if(type == 2){
+				addObject(new Yellow(r, 0, fallSpeed, color3, this, ObjectId.Yellow));
+			}
+			else if(type == 3){
+				addObject(new Blue(r, 0, fallSpeed, color4, this, ObjectId.Blue));
+			}
+			else if(type == 4){
+				addObject(new Magenta(r, 0, fallSpeed, color5, this, ObjectId.Magenta));
+			}
+			previousType = type;
+		}
+	}
+	
+	//summons a random square
+	public void summon(){
+		int type;
+		
+		do{
+			type = (int)(Math.random()*(2+difficulty));
+		}
+		while(previousType == type);
+		
+		summon(type);
+	}
+	
+	//set the number of points
+	public void setPoints(int amount){
+		points+=amount;
+		if(points > maxPoints){
+			points = maxPoints;
+		}
+		if(points < minPoints){
+			points = minPoints;
+		}
+	}
+	
+	//gives the number of points
+	public int getPoints(){
+		if(points > maxPoints){
+			return maxPoints;
+		}
+		if(points < minPoints){
+			return minPoints;
+		}
+		return points;
+	}
+	
+	//determines if enableNumbers is true or false
+	public boolean numbersEnabled(){
+		return enableNumbers;
+	}
+	
+	//gives a value to numbersOverBar
+	public void setNumbersOverBar(boolean num){
+		numbersOverBar = num;
+	}
+	
+	//determines if numbersOverBar is true or false
+	public boolean numbersOverBar(){
+		return numbersOverBar;
+	}
+	
+	//gives a value to enableNumbers
+	public void setNumbersEnabled(boolean num){
+		enableNumbers = num;
+	}
+	
+	//resets the game
+	public void reset(){
+		object = new LinkedList<GameObject>();
+		barIsAlive = false;
+		automatedSpawn = false;
+		generateFallSpeed = false;
+		previousType = -1;
+		points = 0;
+		barColor = Color.GRAY;
+		numbersOverBar = false;
+		enableNumbers = false;
+		countMsg = 0;
+		noteStreak = 0;
+		reduceBar = false;
+		powerOrbActive = false;
+		try {
+			difficulty = getDifficulty();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Game has been reseted.");
+	}
+	
+	//reset menus
+	public void setMenu(int state){
+		object = new LinkedList<GameObject>();
+		setGameState(state);
+	}
+	
+	//adds an object
+	public void addObject(GameObject object){
+		this.object.add(object);
+	}
+	
+	//removes an object
+	public void removeObject(GameObject object){
+		this.object.remove(object);
+	}
+	
+	//adds an object to currentGame
+	public void addCurrentObject(GameObject object){
+		this.currentGame.add(object);
+	}
+	
+	//removes an object from currentGame
+	public void removeCurrentObject(GameObject object){
+		this.currentGame.remove(object);
+	}
+	
+	//adds a color
+	public void addColor(Color c, LinkedList<Color> list){
+		list.add(c);
+	}
+	
+	//removes a color
+	public void removeColor(Color c, LinkedList<Color> list){
+		list.remove(c);
+	}
+	
+	//adds a control
+	public void addControl(int i, LinkedList<Integer> list){
+		list.add(i);
+	}
+	
+	//removes a control
+	public void removeControl(int i, LinkedList<Integer> list){
+		list.remove(i);
+	}
+}

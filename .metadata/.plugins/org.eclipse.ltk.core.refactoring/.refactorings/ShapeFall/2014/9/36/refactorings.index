@@ -1,0 +1,13 @@
+1409682936624	Delete element
+1409769794320	Rename method 'setGameSong'
+1409838780477	Rename method 'setCurrentColor'
+1409929258956	Rename field 'gameSongOption'
+1409929279238	Rename field 'gameSong'
+1409929290919	Rename method 'getGameSong'
+1409929305670	Rename type 'GameSong'
+1409929317791	Rename type 'GameSongButton'
+1409929601945	Rename method 'removeGameSongButton'
+1409929616347	Rename method 'gameSong'
+1409929665322	Rename resource 'GameSong.txt'
+1409929675943	Rename method 'setGameSongOption'
+1409929698195	Rename method 'getGameSongOption'

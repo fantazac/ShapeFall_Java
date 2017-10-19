@@ -1,0 +1,183 @@
+package Objects;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.util.LinkedList;
+
+import Interface.Handler;
+
+public class NoteBar extends GameObject{
+	
+	Handler handler;
+	
+	int sameColorPoints = 5;
+	
+	int notSameColorPoints = -1;
+	
+	int minimumBarWidth = 60;
+	
+	int barReduction = 10;
+	
+	int barIncrease = 30;
+	
+	boolean barHasToBeReduced = false;
+	
+	boolean barHasToBeIncreased = false;
+	
+	int barReductionValue = 0;
+	
+	int barIncreaseValue = 0;
+	
+	boolean allowScoreUpdate = false;
+	
+	public NoteBar(float x, float y, float width, float height, Handler handler, ObjectId id) {
+		super(x, y, width, height, id);
+		this.handler = handler;
+	}
+
+	public void tick(LinkedList<GameObject> object) {
+		collision();
+		
+		if(barHasToBeReduced){
+			setWidth(getWidth()-2);
+			setX(getX()+1);
+			barReductionValue-=2;
+			if(barReductionValue <= 0){
+				barHasToBeReduced = false;
+			}
+		}
+		
+		if(barHasToBeIncreased){
+			if(getWidth() >= handler.getInitialWidth()){
+				barHasToBeIncreased = false;
+				barIncreaseValue = 0;
+			}
+			else{
+				setWidth(getWidth()+2);
+				setX(getX()-1);
+				barIncreaseValue-=2;
+				if(barIncreaseValue <= 0){
+					barHasToBeIncreased = false;
+				}
+			}
+		}
+	}
+	
+	public void collision(){
+		for(int i = 0; i < handler.object.size(); i++){
+			GameObject tempObject = handler.object.get(i);
+			
+			if(tempObject.getId() == ObjectId.Green){
+				if(getBounds().intersects(tempObject.getBounds())){
+					amountOfPoints(1, tempObject.getX(), tempObject.getY(), tempObject);
+					handler.removeObject(tempObject);
+				}
+			}
+			
+			if(tempObject.getId() == ObjectId.Red){
+				if(getBounds().intersects(tempObject.getBounds())){
+					amountOfPoints(2, tempObject.getX(), tempObject.getY(), tempObject);
+					handler.removeObject(tempObject);
+				}
+			}
+			
+			if(tempObject.getId() == ObjectId.Yellow){
+				if(getBounds().intersects(tempObject.getBounds())){
+					amountOfPoints(3, tempObject.getX(), tempObject.getY(), tempObject);
+					handler.removeObject(tempObject);
+				}
+			}
+			
+			if(tempObject.getId() == ObjectId.Blue){
+				if(getBounds().intersects(tempObject.getBounds())){
+					amountOfPoints(4, tempObject.getX(), tempObject.getY(), tempObject);
+					handler.removeObject(tempObject);
+				}
+			}
+			
+			if(tempObject.getId() == ObjectId.Magenta){
+				if(getBounds().intersects(tempObject.getBounds())){
+					amountOfPoints(5, tempObject.getX(), tempObject.getY(), tempObject);
+					handler.removeObject(tempObject);
+				}
+			}
+		}		
+	}
+
+	public void amountOfPoints(int c, float x1, float y1, GameObject obj){
+		if((handler.getBarColor() == handler.getColor(1) && c == 1) ||
+				(handler.getBarColor() == handler.getColor(2) && c == 2) ||
+				(handler.getBarColor() == handler.getColor(3) && c == 3) ||
+				(handler.getBarColor() == handler.getColor(4) && c == 4) ||
+				(handler.getBarColor() == handler.getColor(5) && c == 5 ||
+				(handler.getBarColor() == Color.BLACK))){
+			handler.setPoints(sameColorPoints);
+			
+			handler.squareSound();
+			
+			if(handler.powerOrbActive()){
+				handler.addObject(new PowerOrb(x1, y1, 25, 25, handler.getGameWidth()-25, y1-10, handler, ObjectId.PowerOrb));
+			}
+			
+			handler.setNoteStreak(1);
+			
+			if(handler.getNoteStreak() >=handler.getMaxStreak() && getWidth() < handler.getInitialWidth() && handler.canReduceBar() && handler.getNoteStreak()%20 == 0){
+				//setBarWidth(barWidthIncreaseOnStreak);
+				//setBarX(barXRepositionOnStreak);
+				barHasToBeIncreased = true;
+				barIncreaseValue += barIncrease;
+			}
+			
+			if(allowScoreUpdate){
+				handler.addObject(new ScoreUpdate(obj.getX()-7, obj.getY(), 16, 20, sameColorPoints, handler.getCountMsg(), handler, ObjectId.ScoreUpdate));
+			}
+		}
+		else{
+			handler.setPoints(notSameColorPoints);
+			
+			handler.failSound();
+			
+			if(handler.getNoteStreakForComboBar() > 0){
+				handler.setNoteStreakForComboBar(-handler.getNoteStreakForComboBar());
+			}
+			
+			if(handler.getNoteStreak() > 0){
+				handler.setNoteStreak(-handler.getNoteStreak());
+			}
+			else if(handler.canReduceBar()){	
+				if(getWidth() >= minimumBarWidth){
+					//ANIMATION OF BAR REDUCING
+					//setWidth((int)(this.getWidth()-barReduction));
+					//setX((int)(this.getX()+(barReduction/2)));
+					barHasToBeReduced = true;
+					barReductionValue += barReduction;
+				}
+				else{
+					//DEFEAT
+					handler.losingSound();
+					handler.setGameOver();
+					System.out.println("You lost, GG.");
+				}
+			}
+			if(allowScoreUpdate){
+				handler.addObject(new ScoreUpdate(obj.getX()-7, obj.getY(), 16, 20, notSameColorPoints, handler.getCountMsg(), handler, ObjectId.ScoreUpdate));
+			}
+		}
+		handler.setCountMsg();
+	}
+	
+	public void render(Graphics g) {
+		g.setColor(handler.getBarColor());
+		g.fillRect((int)x, (int)y, (int)width, (int)height);
+		
+		/*Graphics2D g2d = (Graphics2D) g;
+		g.setColor(Color.BLUE);
+		g2d.draw(getBounds());*/
+	}
+
+	public Rectangle getBounds() {
+		return new Rectangle((int)x, (int)y, (int)width, (int)height);
+	}
+
+}

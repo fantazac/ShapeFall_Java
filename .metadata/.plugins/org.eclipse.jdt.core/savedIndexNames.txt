@@ -1,0 +1,3 @@
+INDEX VERSION 1.126+D:\Bureau\SHAPEFALL 19 aka 420\.metadata\.plugins\org.eclipse.jdt.core
+90494350.index
+985286902.index

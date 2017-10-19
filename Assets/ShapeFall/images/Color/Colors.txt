@@ -1,0 +1,1 @@
+Just make it pretty much the same as controls ; press enter on a color and your cursor moves to the right, where you can pick one of the colors. Once selected, cursor goes back to the left.

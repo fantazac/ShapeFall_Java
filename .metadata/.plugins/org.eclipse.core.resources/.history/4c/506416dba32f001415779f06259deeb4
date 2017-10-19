@@ -1,0 +1,728 @@
+package Interface;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.LinkedList;
+
+import Menu.ChangingKeyButton;
+import Menu.ControlsButton;
+import Menu.DifficultyButton;
+import Menu.GMButton;
+import Menu.MenuButton;
+import Menu.PauseButton;
+import Menu.PauseSettingsButton;
+import Menu.SettingsButton;
+import Objects.Blue;
+import Objects.ComboBar;
+import Objects.GameObject;
+import Objects.Green;
+import Objects.NoteBar;
+import Objects.ObjectId;
+import Objects.Magenta;
+import Objects.Red;
+import Objects.Scoreboard;
+import Objects.Yellow;
+import Save.Difficulty;
+
+public class Handler {
+
+	Game game;
+	
+	//0 = Main Menu
+	//1 = Game
+	//2 = Pause Menu
+	//3 = Controls Menu
+	//4 = Changing key
+	//5 = Settings
+	//6 = Difficulty
+	//7 = Pause Settings
+	//8 = GM
+	int gameState = 0;
+	
+	int menuOption = 0;
+	
+	int pauseOption = 0;
+	
+	int controlsOption = 0;
+	
+	int settingsOption = 0;
+	
+	int clock = 0;
+	
+	boolean barIsAlive = false;
+	
+	boolean automatedSpawn = false;
+	
+	boolean generateFallSpeed = false;
+	
+	boolean enableNumbers = false;
+	
+	boolean numbersOverBar = false;
+	
+	boolean reduceBar = false;
+	
+	boolean powerOrbActive = false;
+	
+	int countMsg;
+	
+	float YSpeed = 1;
+	
+	int points = 0;
+	
+	int maxPoints = 2000000000;
+	
+	int minPoints = -999999999;
+	
+	int previousType;
+	
+	int noteStreak;
+	
+	int maxNoteStreak = 20;
+	
+	int spawnTime = 60;
+	
+	int difficulty;
+	
+	float initialWidth;
+
+	float initialX;
+	
+	Color color1 = Color.GREEN;
+	
+	Color color2 = Color.RED;
+
+	Color color3 = Color.YELLOW;
+	
+	Color color4 = Color.BLUE;
+	
+	Color color5 = Color.MAGENTA;
+	
+	String mainMusic = "pokemon.wav";
+	//String mainMusic = "ghostbusters.wav";
+	//String mainMusic = "troll.wav";
+	//String mainMusic = "pokemon.wav";
+	
+	String squareSound = "squaresound.wav";
+	
+	String failSound = "failsound.wav";
+	
+	Color barColor = Color.GRAY;
+	
+	public LinkedList<GameObject> object = new LinkedList<GameObject>();
+	
+	public LinkedList<Sound> hitSound = new LinkedList<Sound>();
+	
+	private GameObject tempObject;
+	
+	public Handler(Game game){
+		this.game = game;
+		initialWidth = getGameWidth()-500;
+		initialX = getInitialX();
+		setMainMenu();
+		new Difficulty();
+		try {
+			difficulty = getDifficulty();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		new Sound(mainMusic, this);
+	}
+	
+	public void tick(){
+		clock++;
+		
+		for(int i = 0; i < object.size(); i++){
+			object.get(i).tick(object);
+		}
+		
+		if(clock >= spawnTime && barIsAlive && automatedSpawn){
+			summon();
+			clock = 0;
+		}
+	}
+	
+	public void render(Graphics g){
+		
+		for(int i = 0; i < object.size(); i++){
+			tempObject = object.get(i);
+			//active les methodes render(g) pour tous les GameObject
+			tempObject.render(g);
+		}
+	}
+	
+	public float getGameHeight(){
+		return game.getHeight();
+	}
+	
+	public float getGameWidth(){
+		return game.getWidth();
+	}
+	
+	//determines which game state is active
+	public void setGameState(int gs){
+		if(gs == 0){
+			gs = 0;
+			System.out.println("Main Menu");
+		}
+		if(gs == 1){
+			System.out.println("Game Start");
+		}
+		if(gs == 2){
+			System.out.println("Game Paused");
+		}
+		if(gs == 3){
+			System.out.println("Controls Menu");
+		}
+		if(gs == 4){
+			System.out.println("Controls Menu: Changing Key");
+		}
+		if(gs == 5){
+			System.out.println("Settings Menu");
+		}
+		if(gs == 6){
+			System.out.println("Settings Menu: Changing Difficulty");
+		}
+		if(gs == 7){
+			System.out.println("Pause Menu: Quitting game to Settings");
+		}
+		if(gs == 8){
+			System.out.println("Settings: GM Menu");
+		}
+		if(gs < 0 || gs > 8){
+			gs = 0;
+			setMainMenu();
+			System.out.println("Invalid Game State: Returning to Main Menu.");
+		}
+		gameState = gs;
+	}
+	
+	//returns the active game state
+	public int getGameState(){
+		return gameState;
+	}
+	
+	//changes active game state to "Main Menu"
+	public void setMainMenu(){
+		reset();
+		setGameState(0);
+		addObject(new MenuButton(570, 100, this, ObjectId.MenuButton));
+	}
+	
+	//changes active game state to "Game"
+	public void setGame(){
+		reset();
+		setGameState(1);
+		spawnBar();
+	}
+	
+	//changes back active game state to "Game"
+	public void resumeGame(){
+		removePauseButton();
+		setGameState(1);
+	}
+	
+	//changes active game state to "Pause Menu"
+	public void setPause(){
+		setGameState(2);
+		addObject(new PauseButton(getGameWidth()/2-150, 100, this, ObjectId.PauseButton));
+	}
+	
+	//changes active game state to "Controls Menu"
+	public void setControls(){
+		setGameState(3);
+		addObject(new ControlsButton(0, 0, this, ObjectId.ControlsButton));
+	}
+	
+	//changes active game state to "Controls Menu: Change Key"
+	public void setChangingKey(){
+		setGameState(4);
+		addObject(new ChangingKeyButton(0, 0, this, ObjectId.ChangingKeyButton));
+	}
+	
+	//changes active game state to "Settings Menu"
+	public void setSettings(){
+		setGameState(5);
+		addObject(new SettingsButton(0, 0, this, ObjectId.SettingsButton));
+	}
+	
+	//changes active game state to "Settings Menu: Change Difficulty"
+	public void setDifficulty(){
+		setGameState(6);
+		addObject(new DifficultyButton(0, 0, this, ObjectId.DifficultyButton));
+	}
+	
+	//changes active game state to "Pause Menu: Settings Menu"
+	public void setPauseSettings(){
+		setGameState(7);
+		addObject(new PauseSettingsButton(0, 0, this, ObjectId.PauseSettingsButton));
+		setPauseButtonOnTop();
+	}
+	
+	//changes active game state to "GM Menu"
+	public void setGM(){
+		setGameState(8);
+		addObject(new GMButton(0, 0, this, ObjectId.GMButton));
+	}
+	
+	//removes the active Pause Button
+	public void removeMenuButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.PauseButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Pause Button
+	public void removePauseButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.PauseButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//moves the active Pause Button to be drawn on top
+	public void setPauseButtonOnTop(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.ControlsButton){
+				removeObject(object.get(i));
+				addObject(new PauseSettingsButton(0, 0, this, ObjectId.PauseSettingsButton));
+			}
+		}
+	}
+	
+	//removes the active Controls Button
+	public void removeControlsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.ControlsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//removes the active Settings Button
+	public void removeSettingsButton(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.SettingsButton){
+				removeObject(object.get(i));
+			}
+		}
+	}
+	
+	//plays the Sound when a square is the right color
+	public void squareSound(){
+		hitSound = new LinkedList<Sound>();
+		addHitSound(new Sound(squareSound, this));
+	}
+	
+	//plays the Sound when a square is not the right color
+	public void failSound(){
+		hitSound = new LinkedList<Sound>();
+		addHitSound(new Sound(failSound, this));
+	}
+	
+	//gets the difficulty from the Difficulty.txt file
+	public int getDifficulty() throws IOException{
+		int diff;
+		String word = "";
+		
+		BufferedReader br = new BufferedReader(new FileReader("Difficulty.txt"));
+		word = br.readLine();
+		diff = Integer.parseInt(word);
+		br.close();
+		
+		if(diff < 1){
+			diff = 1;
+		}
+		
+		if(diff > 3){
+			diff = 3;
+		}
+		
+		return diff;
+	}
+	
+	//determines which menu option is highlighted for "Main Menu"
+	public void setMenuOption(int mo){
+		if(mo > 3){
+			mo = 3;
+		}
+		if(mo < 0){
+			mo = 0;
+		}
+		menuOption = mo;
+	}
+	
+	//determines which menu option is highlighted for "Pause Menu"
+	public void setPauseOption(int po){
+		if(po > 3){
+			po = 3;
+		}
+		if(po < 0){
+			po = 0;
+		}
+		pauseOption = po;
+	}
+	
+	//determines which menu option is highlighted for "Controls Menu"
+	public void setControlsOption(int co){
+		if(co > 3){
+			co = 3;
+		}
+		if(co < 0){
+			co = 0;
+		}
+		controlsOption = co;
+	}
+	
+	//determines which menu option is highlighted for "Settings Menu"
+	public void setSettingsOption(int so){
+		if(so > 3){
+			so = 3;
+		}
+		if(so < 0){
+			so = 0;
+		}
+		settingsOption = so;
+	}
+	
+	//returns the highlighted menuOption
+	public int getMenuOption(){
+		return menuOption;
+	}
+	
+	//returns the highlighted pauseOption
+	public int getPauseOption(){
+		return pauseOption;
+	}
+	
+	//returns the highlighted controlsOption
+	public int getControlsOption(){
+		return controlsOption;
+	}
+	
+	//returns the highlighted settingsOption
+	public int getSettingsOption(){
+		return settingsOption;
+	}
+	
+	//returns the color of the needed square
+	public Color getColor(int c){
+		if(c == 1){
+			return color1;
+		}
+		else if(c == 2){
+			return color2;
+		}
+		else if(c == 3){
+			return color3;
+		}
+		else if(c == 4){
+			return color4;
+		}
+		else if(c == 5){
+			return color5;
+		}
+		else{
+			System.out.println("ERROR getColor(int): Color number INVALID. Returning color1.");
+		}
+		return color1;
+	}
+	
+	//spawns the bar and the combo bar
+	public void spawnBar(){
+		addObject(new NoteBar(435, getGameHeight()*8/10+15, this, ObjectId.NoteBar));
+		addObject(new ComboBar(getGameWidth()-57, 250+200, this, ObjectId.ComboBar));
+		addObject(new Scoreboard(0, 0, this, ObjectId.Scoreboard));
+		barIsAlive = true;
+	}
+	
+	//allows to find out if a precise entity exists
+	public boolean findEntity(GameObject obj){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i) == obj){
+				System.out.println("Entity is alive.");
+				return true;
+			}
+		}
+		System.out.println("Entity does not exist.");
+		return false;
+	}
+	
+	//destroy an entity
+	public void destroyEntity(GameObject obj){
+		removeObject(obj);
+		System.out.println("Object has been removed.");
+	}
+	
+	//determines if a bar exists
+	public boolean findBar(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				System.out.println("The bar already exists.");
+				barIsAlive = true;
+				return true;
+			}
+		}
+		System.out.println("The bar has been created.");
+		return false;
+	}
+	
+	//determines the bar's width
+	public float getBarWidth(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				return object.get(i).getWidth();
+			}
+		}
+		return 0;
+	}
+	
+	//sets bar width
+	public void setBarWidth(float w){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				object.get(i).setWidth(object.get(i).getWidth()+w);
+				if(object.get(i).getWidth() >= getGameWidth()-500){
+					object.get(i).setWidth(getGameWidth()-500);
+				}
+			}
+		}
+	}
+	
+	//sets bar x
+	public void setBarX(float x){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				object.get(i).setX(object.get(i).getX()+x);
+				if(object.get(i).getX() <= initialX){
+					object.get(i).setX(initialX);
+				}
+			}
+		}
+	}
+	
+	//determines the bar's x
+	public float getBarX(){
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				return object.get(i).getX();
+			}
+		}
+		return 0;
+	}
+	
+	//get the bar initial width
+	public float getInitialWidth(){
+		return initialWidth;
+	}
+	
+	//set the bar initial x
+	public void setInitialX(float x3){
+		initialX = x3;
+	}
+	
+	//get the bar initial x
+	public float getInitialX(){
+		return initialX;
+	}
+	
+	//can reduce the width of the bar
+	public boolean canReduceBar(){
+		return reduceBar;
+	}
+	
+	//can do the power orbs
+	public boolean powerOrbActive(){
+		return powerOrbActive;
+	}
+	
+	//gives the color of the bar
+	public Color getBarColor(){
+		return barColor;
+	}
+	
+	//sets the color of the bar
+	public void setBarColor(Color color){
+		barColor = color;
+	}
+	
+	//gets countMsg
+	public int getCountMsg(){
+		return countMsg;
+	}
+	
+	//countMsg iteration
+	public void setCountMsg(){
+		countMsg++;
+	}
+	
+	//gets noteStreak
+	public int getNoteStreak(){
+		return noteStreak;
+	}
+	
+	//TO DELETE
+	public int findTheFuckingBar(){
+		int c = 0;
+		for(int i = 0; i < object.size(); i++){
+			if(object.get(i).getId() == ObjectId.NoteBar){
+				c++;
+			}
+		}
+		return c;
+	}
+	
+	//noteStreak iteration
+	public void setNoteStreak(int i){
+		noteStreak += i;
+		if(getNoteStreak() >= 20 && getBarWidth() < initialWidth && canReduceBar()){
+			setNoteStreak(-getNoteStreak());
+			setBarWidth(30);
+			setBarX(-15);
+		}
+		else if(getNoteStreak() >= 20){
+			noteStreak = 20;
+		}
+	}
+	
+	//summons a square
+	public void summon(int type){
+		if(gameState == 1){
+			int r = (int)((Math.random()*(getBarWidth()-40))+getBarX()+10);
+			float fallSpeed = YSpeed;
+			if(generateFallSpeed){
+				if(difficulty == 1){
+					fallSpeed = (float)(Math.random())+(YSpeed);
+				}
+				else if(difficulty == 2){
+					fallSpeed = (float)(Math.random()*1.25)+(YSpeed);
+				}
+				else if(difficulty == 3){
+					fallSpeed = (float)(Math.random()*2.5)+(YSpeed);
+				}
+				else{
+					System.out.println("ERROR: Difficulty for summon(int) is incorrect");
+				}
+			}
+			
+			if(type == 0){
+				addObject(new Green(r, 0, fallSpeed, color1, this, ObjectId.Green));
+			}
+			else if(type == 1){
+				addObject(new Red(r, 0, fallSpeed, color2, this, ObjectId.Red));
+			}
+			else if(type == 2){
+				addObject(new Yellow(r, 0, fallSpeed, color3, this, ObjectId.Yellow));
+			}
+			else if(type == 3){
+				addObject(new Blue(r, 0, fallSpeed, color4, this, ObjectId.Blue));
+			}
+			else if(type == 4){
+				addObject(new Magenta(r, 0, fallSpeed, color5, this, ObjectId.Magenta));
+			}
+			previousType = type;
+		}
+	}
+	
+	//summons a random square
+	public void summon(){
+		int type;
+		
+		do{
+			type = (int)(Math.random()*(2+difficulty));
+		}
+		while(previousType == type);
+		
+		summon(type);
+	}
+	
+	//set the number of points
+	public void setPoints(int amount){
+		points+=amount;
+		if(points > maxPoints){
+			points = maxPoints;
+		}
+		if(points < minPoints){
+			points = minPoints;
+		}
+	}
+	
+	//gives the number of points
+	public int getPoints(){
+		if(points > maxPoints){
+			return maxPoints;
+		}
+		if(points < minPoints){
+			return minPoints;
+		}
+		return points;
+	}
+	
+	//determines if enableNumbers is true or false
+	public boolean numbersEnabled(){
+		return enableNumbers;
+	}
+	
+	//gives a value to numbersOverBar
+	public void setNumbersOverBar(boolean num){
+		numbersOverBar = num;
+	}
+	
+	//determines if numbersOverBar is true or false
+	public boolean numbersOverBar(){
+		return numbersOverBar;
+	}
+	
+	//gives a value to enableNumbers
+	public void setNumbersEnabled(boolean num){
+		enableNumbers = num;
+	}
+	
+	//resets the game
+	public void reset(){
+		object = new LinkedList<GameObject>();
+		barIsAlive = false;
+		automatedSpawn = false;
+		generateFallSpeed = false;
+		previousType = -1;
+		points = 0;
+		barColor = Color.GRAY;
+		numbersOverBar = false;
+		enableNumbers = false;
+		countMsg = 0;
+		noteStreak = 0;
+		reduceBar = false;
+		powerOrbActive = false;
+		try {
+			difficulty = getDifficulty();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Game has been reseted.");
+	}
+	
+	//adds an object
+	public void addObject(GameObject object){
+		this.object.add(object);
+	}
+	
+	//removes an object
+	public void removeObject(GameObject object){
+		this.object.remove(object);
+	}
+	
+	//adds an object
+	public void addHitSound(Sound s){
+		this.hitSound.add(s);
+	}
+		
+	//removes an object
+	public void removeHitSound(Sound s){
+		this.hitSound.remove(s);
+	}
+}

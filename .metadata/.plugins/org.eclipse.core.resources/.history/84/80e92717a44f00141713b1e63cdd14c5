@@ -1,0 +1,1034 @@
+package Interface;
+
+import java.awt.Color;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.LinkedList;
+
+import Objects.NoteBar;
+import Objects.ObjectId;
+import Objects.ComboBar;
+import Objects.Scoreboard;
+import Save.Colors;
+import Save.Controls;
+import Save.Difficulty;
+import Save.Music;
+import Save.Shape;
+
+public class KeyInput extends KeyAdapter{
+	
+	//OPTIONS
+	
+	//T = spawn the bar
+	//A = set spawn automated
+	//F = set generated fall speed for squares
+	//N = set numbers in squares
+	//S = summon a square
+	//D = bar loses width
+	//O = activate power orbs
+	//1,2,3,4,5 = change the color of the bar (legit)
+	//9,0 = change bar color to white/black (cheat)
+	//R = reset the game
+	//K = place scoreupdate over the scoreboard
+	//P = pause the game
+	
+	//G = CUSTOM (A, F, D, O)
+	
+	/*
+	 * LISTE DE L'ORDRE DANS LE FICHIER TEXTE
+	KeyEvent bar;//0
+	KeyEvent autoSpawn;//1
+	KeyEvent genFall;//2
+	KeyEvent numSquare;//3
+	KeyEvent summon;//4
+	KeyEvent barLoseWidth;//5
+	KeyEvent orbs;//6
+	KeyEvent color1;//7
+	KeyEvent color2;//8
+	KeyEvent color3;//9
+	KeyEvent color4;//10
+	KeyEvent color5;//11
+	KeyEvent reset;//12
+	KeyEvent scoreUpdate;//13
+	KeyEvent pause://14
+	
+	KeyEvent debug1;//15
+	KeyEvent debug2;//16
+	KeyEvent debug3;//17
+	*/
+	
+	public boolean enterKey = false;
+	
+	public boolean gm = false;
+	
+	public LinkedList<Integer> keys = new LinkedList<Integer>();
+	
+	Handler handler;
+
+	public KeyInput(Handler handler){
+		this.handler = handler;
+		
+		try {
+			new Controls(this, 7);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void keyPressed(KeyEvent e){
+		//INGAME
+		if(handler.getGameState() == 1){
+			state1(e);
+		}
+		
+		//MAIN MENU
+		else if(handler.getGameState() == 0){
+			state0(e);
+		}
+		
+		//PAUSE
+		else if(handler.getGameState() == 2){
+			state2(e);
+		}
+		
+		//SETTINGS
+		else if(handler.getGameState() == 3){
+			state3(e);
+		}
+		
+		//CONTROLS
+		else if(handler.getGameState() == 4){
+			state4(e);
+		}
+		
+		//DIFFICULTY
+		else if(handler.getGameState() == 5){
+			state5(e);
+		}
+		
+		//AUDIO
+		else if(handler.getGameState() == 6){
+			state6(e);
+		}
+		
+		//SOUNDS
+		else if(handler.getGameState() == 7){
+			state7(e);
+		}
+		
+		//MUSIC
+		else if(handler.getGameState() == 8){
+			state8(e);
+		}
+		
+		//COLORS
+		else if(handler.getGameState() == 9){
+			state9(e);
+		}
+		
+		//SHAPE
+		else if(handler.getGameState() == 10){
+			state10(e);
+		}
+		
+		//EXTRA
+		else if(handler.getGameState() == 11){
+			state11(e);
+		}
+		
+		//OTHER OPTION IN MENU
+		else if(handler.getGameState() == 12){
+			state12(e);
+		}
+		
+		//PAUSE SETTINGS
+		else if(handler.getGameState() == 13){
+			state13(e);
+		}
+		
+		//GAME OVER
+		else if(handler.getGameState() == 14){
+			state14(e);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER){
+			enterKey = true;
+		}
+	}
+	
+	public void keyReleased(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_ENTER){
+			enterKey = false;
+		}
+	}
+	
+	//MAINMENU
+	public void state0(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getMenuOption() > 0){
+			handler.setMenuOption(handler.getMenuOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getMenuOption() < 3){
+			handler.setMenuOption(handler.getMenuOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//start game
+			if(handler.getMenuOption() == 0){
+				handler.setGame();
+			}
+			
+			//settings
+			if(handler.getMenuOption() == 1){
+				handler.setSettings();
+			}
+			
+			//
+			if(handler.getMenuOption() == 2){
+				System.out.println("Feature not created yet. Sending back to Main Menu.");
+			}
+			
+			//exit
+			if(handler.getMenuOption() == 3){
+				System.out.println("Game shutting down.");
+				System.exit(0);
+			}
+		}
+	}
+	
+	//INGAME
+	public void state1(KeyEvent e){
+		//CUSTOM
+		if(e.getKeyCode() == keys.get(5)){
+			handler.automatedSpawn = true;
+			handler.generateFallSpeed = true;
+			handler.reduceBar = true;
+			handler.powerOrbActive = true;
+		}
+		
+		//PAUSE
+		if(e.getKeyCode() == keys.get(6)){
+			handler.setPause();
+		}
+		
+		//STAR POWER
+		if(e.getKeyCode() == KeyEvent.VK_U && handler.canUseStarPower){
+			handler.canUseStarPower = false;
+			handler.starPowerActive = true;
+		}
+		
+		//create the bar and the combo bar
+		if(e.getKeyCode() == KeyEvent.VK_T && !handler.findBar() && gm){
+			handler.addObject(new NoteBar(handler.initialX, handler.getGameHeight()*5/6, handler.getInitialWidth(), handler.barHeight, handler, ObjectId.NoteBar));
+			handler.addObject(new ComboBar(handler.getGameWidth()-60, handler.getGameHeight()*3/4, handler.comboBarWidthAndHeight, handler.comboBarWidthAndHeight, handler, ObjectId.ComboBar));
+			handler.addObject(new Scoreboard(handler.getInitialX()*2, 
+					handler.getBarY()+handler.getBarHeight()+((handler.getGameHeight()-handler.getBarY()-handler.getBarHeight())/2)-handler.scoreboardHeight, handler.scoreboardHeight, 
+					handler.scoreboardHeight*(6f+(2f/3f)), handler, ObjectId.Scoreboard));
+			handler.barIsAlive = true;
+		}
+		
+		//determines if the bar loses width
+		if(e.getKeyCode() == KeyEvent.VK_D && gm){
+			if(handler.reduceBar){
+				handler.reduceBar = false;
+				System.out.println("Bar: Cannot get reduced");
+			}
+			else{
+				handler.reduceBar = true;
+				System.out.println("Bar: Can get reduced");
+			}
+		}
+		
+		//controls power orbs
+		if(e.getKeyCode() == KeyEvent.VK_O && gm){
+			if(handler.powerOrbActive){
+				handler.powerOrbActive = false;
+				System.out.println("Power Orb: OFF");
+			}
+			else{
+				handler.powerOrbActive = true;
+				System.out.println("Power Orb: ON");
+			}
+		}
+		
+		//controls if the spawn of squares is automated
+		if(e.getKeyCode() == KeyEvent.VK_A && gm){
+			if(handler.automatedSpawn){
+				handler.automatedSpawn = false;
+				System.out.println("Spawn: Manual");
+			}
+			else{
+				handler.automatedSpawn = true;
+				System.out.println("Spawn: Automatic");
+			}
+		}
+		
+		//controls if the fall speed of squares is random or 2
+		if(e.getKeyCode() == KeyEvent.VK_F && gm){
+			if(handler.generateFallSpeed){
+				handler.generateFallSpeed = false;
+				System.out.println("Fall Speed: 2");
+			}
+			else{
+				handler.generateFallSpeed = true;
+				System.out.println("Fall Speed: Generated");
+			}
+			
+		}
+		
+		//controls numbers in the squares
+		if(e.getKeyCode() == KeyEvent.VK_N && gm){
+			if(handler.enableNumbers){
+				handler.setNumbersEnabled(false);
+				System.out.println("Numbers: OFF");
+			}
+			else{
+				handler.setNumbersEnabled(true);
+				System.out.println("Numbers: ON");
+			}
+			
+		}
+		
+		//controls if the numbers for the points are over the bar
+		if(e.getKeyCode() == KeyEvent.VK_K && gm){
+			if(handler.numbersOverBar()){
+				handler.setNumbersOverBar(false);
+				System.out.println("Numbers over bar: OFF");
+			}
+			else{
+				handler.setNumbersOverBar(true);
+				System.out.println("Numbers over bar: ON");
+			}
+			
+		}
+		
+		//summon a random square
+		if(e.getKeyCode() == KeyEvent.VK_S && handler.barIsAlive && gm){
+			handler.summon();
+		}
+		
+		//summon a green
+		if(e.getKeyCode() == keys.get(0) && handler.barIsAlive && !handler.starPowerActive && !handler.pauseDelayIsActive){
+			handler.setBarColor(handler.getColor(1));
+			System.out.println("Bar Color: Green");
+		}
+		
+		//summon a red
+		if(e.getKeyCode() == keys.get(1) && handler.barIsAlive && !handler.starPowerActive && !handler.pauseDelayIsActive){
+			handler.setBarColor(handler.getColor(2));
+			System.out.println("Bar Color: Red");
+		}
+		
+		//summon a yellow
+		if(e.getKeyCode() == keys.get(2) && handler.barIsAlive && !handler.starPowerActive && !handler.pauseDelayIsActive){
+			handler.setBarColor(handler.getColor(3));
+			System.out.println("Bar Color: Yellow");
+		}
+		
+		//summon a blue
+		if(e.getKeyCode() == keys.get(3) && handler.barIsAlive && !handler.starPowerActive && !handler.pauseDelayIsActive){
+			handler.setBarColor(handler.getColor(4));
+			System.out.println("Bar Color: Blue");
+		}
+		
+		//summon a magenta
+		if(e.getKeyCode() == keys.get(4) && handler.barIsAlive && !handler.starPowerActive && !handler.pauseDelayIsActive){
+			handler.setBarColor(handler.getColor(5));
+			System.out.println("Bar Color: Magenta");
+		}
+		
+		//cheat mode
+		if(e.getKeyCode() == KeyEvent.VK_0 && handler.barIsAlive && gm){
+			handler.setBarColor(Color.BLACK);
+			System.out.println("Bar Color: Black (Cheat Mode)");
+		}
+		if(e.getKeyCode() == KeyEvent.VK_9 && handler.barIsAlive && gm){
+			handler.setBarColor(Color.WHITE);
+			System.out.println("Bar Color: White (Cheat Mode)");
+		}
+	}
+	
+	//PAUSE
+	public void state2(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getPauseOption() > 0){
+			handler.setPauseOption(handler.getPauseOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getPauseOption() < 3){
+			handler.setPauseOption(handler.getPauseOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//RESUME game
+			if(handler.getPauseOption() == 0){
+				handler.resumeGame();
+				System.out.println("Game resumed.");
+				handler.setPauseOption(0);
+			}
+			
+			//restart game
+			if(handler.getPauseOption() == 1){
+				handler.setGame();
+				System.out.println("Game restarting.");
+				handler.setPauseOption(0);
+			}
+			
+			if(handler.getPauseOption() == 2){
+				handler.setPauseSettings();
+			}
+			
+			//MAIN MENU
+			if(handler.getPauseOption() == 3){
+				handler.setMainMenu();
+				handler.setPauseOption(0);
+			}
+		}
+	}
+	
+	//SETTINGS
+	public void state3(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getSettingsOption() > 0){
+			handler.setSettingsOption(handler.getSettingsOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getSettingsOption() < 6){
+			handler.setSettingsOption(handler.getSettingsOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//CONTROLS
+			if(handler.getSettingsOption() == 0){
+				handler.setControls();
+			}
+			
+			//DIFFICULTY
+			if(handler.getSettingsOption() == 1){
+				handler.setDifficulty();
+			}
+			
+			//AUDIO
+			if(handler.getSettingsOption() == 2){
+				handler.setAudio();
+			}
+			
+			//COLORS
+			if(handler.getSettingsOption() == 3){
+				handler.setColors();
+			}
+			
+			//SHAPE
+			if(handler.getSettingsOption() == 4){
+				handler.setShape();
+			}
+			
+			//GM
+			if(handler.getSettingsOption() == 5){
+				if(gm){
+					gm = false;
+					System.out.println("GM Mode: OFF");
+				}
+				else if(!gm){
+					gm = true;
+					System.out.println("GM Mode: ON");
+				}
+			}
+			
+			//MAIN MENU
+			if(handler.getSettingsOption() == 6){
+				handler.setMainMenu();
+				handler.setSettingsOption(0);
+			}
+		}
+	}
+	
+	//CONTROLS
+	public void state4(KeyEvent e){
+		if(!handler.getControlSelection()){
+			if(e.getKeyCode() == KeyEvent.VK_UP && handler.getControlsOption() > 0 && handler.getControlsOption() != 5){
+				if(handler.getControlsOption() == 7 || handler.getControlsOption() == 8 || handler.getControlsOption() == 9){
+					handler.setControlsOption(4);
+				}
+				else{
+					handler.setControlsOption(handler.getControlsOption()-1);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getControlsOption() < 7){
+				if(handler.getControlsOption() == 4 || handler.getControlsOption() == 6){
+					handler.setControlsOption(7);
+				}
+				else{
+					handler.setControlsOption(handler.getControlsOption()+1);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_LEFT){
+				if(handler.getControlsOption() == 5){
+					handler.setControlsOption(0);
+				}
+				else if(handler.getControlsOption() == 6){
+					handler.setControlsOption(2);
+				}
+				else if(handler.getControlsOption() == 7 && !handler.controlsDefaultOption()){
+					handler.setControlsOption(8);
+				}
+				else if(handler.getControlsOption() == 9){
+					handler.setControlsOption(7);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_RIGHT){
+				if(handler.getControlsOption() == 0 || handler.getControlsOption() == 1){
+					handler.setControlsOption(5);
+				}
+				else if(handler.getControlsOption() == 2 || handler.getControlsOption() == 3){
+					handler.setControlsOption(6);
+				}
+				else if(handler.getControlsOption() == 8){
+					handler.setControlsOption(7);
+				}
+				else if(handler.getControlsOption() == 7){
+					handler.setControlsOption(9);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+				
+				//control1
+				if(handler.getControlsOption() == 0){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.control1, handler.availableControl);
+					handler.setSelectedControl(handler.control1);
+					handler.setControlSelection(true);
+				}
+				
+				//control2
+				if(handler.getControlsOption() == 1){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.control2, handler.availableControl);
+					handler.setSelectedControl(handler.control2);
+					handler.setControlSelection(true);
+				}
+				
+				//control3
+				if(handler.getControlsOption() == 2){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.control3, handler.availableControl);
+					handler.setSelectedControl(handler.control3);
+					handler.setControlSelection(true);
+				}
+				
+				//control4
+				if(handler.getControlsOption() == 3){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.control4, handler.availableControl);
+					handler.setSelectedControl(handler.control4);
+					handler.setControlSelection(true);
+				}
+				
+				//control5
+				if(handler.getControlsOption() == 4){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.control5, handler.availableControl);
+					handler.setSelectedControl(handler.control5);
+					handler.setControlSelection(true);
+				}
+				
+				//controlStart
+				if(handler.getControlsOption() == 5){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.controlStart, handler.availableControl);
+					handler.setSelectedControl(handler.controlStart);
+					handler.setControlSelection(true);
+				}
+				
+				//controlPause
+				if(handler.getControlsOption() == 6){
+					handler.setCurrentControlList();
+					handler.setAvailableControlList();
+					handler.addControl(handler.controlPause, handler.availableControl);
+					handler.setSelectedControl(handler.controlPause);
+					handler.setControlSelection(true);
+				}
+				
+				//save
+				if(handler.getControlsOption() == 7){
+					handler.setCurrentControlList();
+					try {
+						keys = new LinkedList<Integer>();
+						new Controls(handler.control1, handler.control2, handler.control3, handler.control4, handler.control5, 
+								handler.controlStart, handler.controlPause);
+						new Controls(this, 7);
+						System.out.println("Controls saved");
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					handler.setSettings();
+					handler.setControlsOption(0);
+				}
+				
+				//default
+				if(handler.getControlsOption() == 8){
+					handler.setControlsDefault();
+					handler.setControlsOption(7);
+				}
+				
+				//cancel
+				if(handler.getControlsOption() == 9){
+					handler.setControlsCancel();
+					handler.setSettings();
+					handler.setControlsOption(0);
+				}
+			}
+		}
+		else{			
+			if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+				handler.setControl(handler.getControlsOption()+1, handler.selectedControl);
+				handler.setControlSelection(false);
+			}
+			
+			if((e.getKeyCode() >= 48 && e.getKeyCode() < 58) || (e.getKeyCode() >= 65 && e.getKeyCode() < 101)){
+				if(handler.controlIsAvailable(e.getKeyCode())){
+					handler.setSelectedControl(e.getKeyCode());
+				}
+			}
+		}
+	}
+	
+	//DIFFICULTY
+	public void state5(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getDifficultyOption() > 0){
+			handler.setDifficultyOption(handler.getDifficultyOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getDifficultyOption() < 3){
+			handler.setDifficultyOption(handler.getDifficultyOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//EASY
+			if(handler.getDifficultyOption() == 0){
+				new Difficulty(1);
+				handler.setSettings();
+			}
+			
+			//MEDIUM
+			if(handler.getDifficultyOption() == 1){
+				new Difficulty(2);
+				handler.setSettings();
+			}
+			
+			//EXPERT
+			if(handler.getDifficultyOption() == 2){
+				new Difficulty(3);
+				handler.setSettings();
+			}
+			
+			//CANCEL
+			if(handler.getDifficultyOption() == 3){
+				handler.setSettings();
+			}
+		}
+	}
+	
+	//AUDIO
+	public void state6(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getAudioOption() > 0){
+			handler.setAudioOption(handler.getAudioOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getAudioOption() < 3){
+			handler.setAudioOption(handler.getAudioOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//SOUNDS
+			if(handler.getAudioOption() == 0){
+				handler.setSounds();
+				
+			}
+			
+			//MUSIC
+			if(handler.getAudioOption() == 1){
+				handler.setMusic();
+			}
+			
+			//
+			if(handler.getAudioOption() == 2){
+				System.out.println("Feature not created yet. Sending back to Settings Menu: Audio.");
+			}
+			
+			//CANCEL
+			if(handler.getAudioOption() == 3){
+				handler.setSettings();
+				handler.setAudioOption(0);
+			}
+		}
+	}
+	
+	//SOUNDS
+	public void state7(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getSoundsOption() > 0){
+			handler.setSoundsOption(handler.getSoundsOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getSoundsOption() < 3){
+			handler.setSoundsOption(handler.getSoundsOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//
+			if(handler.getSoundsOption() == 0){
+				System.out.println("Feature not created yet. Sending back to Settings Menu: Audio.");
+			}
+			
+			//
+			if(handler.getSoundsOption() == 1){
+				System.out.println("Feature not created yet. Sending back to Settings Menu: Audio.");
+			}
+			
+			//
+			if(handler.getSoundsOption() == 2){
+				System.out.println("Feature not created yet. Sending back to Settings Menu: Audio.");
+			}
+			
+			//CANCEL
+			if(handler.getSoundsOption() == 3){
+				handler.setAudio();
+				handler.setSoundsOption(0);
+			}
+		}
+	}
+	
+	//MUSIC
+	public void state8(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getMusicOption() > 0){
+			handler.setMusicOption(handler.getMusicOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getMusicOption() < 3){
+			handler.setMusicOption(handler.getMusicOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//FIRST SONG
+			if(handler.getMusicOption() == 0){
+				new Music(1);
+				handler.music();
+				handler.setAudio();
+			}
+			
+			//SECOND SONG
+			if(handler.getMusicOption() == 1){
+				new Music(2);
+				handler.music();
+				handler.setAudio();
+			}
+			
+			//THIRD SONG
+			if(handler.getMusicOption() == 2){
+				new Music(3);
+				handler.music();
+				handler.setAudio();
+			}
+			
+			//CANCEL
+			if(handler.getMusicOption() == 3){
+				handler.setAudio();
+				handler.setMusicOption(0);
+			}
+		}
+		
+		//SONG NAME? DARUDE - SANDSTORM
+		if(e.getKeyCode() == KeyEvent.VK_EQUALS){
+			new Music(4);
+			handler.music();
+		}
+		
+		//SAO1
+		if(e.getKeyCode() == KeyEvent.VK_1){
+			new Music(5);
+			handler.music();
+		}
+		
+		//SAO2
+		if(e.getKeyCode() == KeyEvent.VK_2){
+			new Music(6);
+			handler.music();
+		}
+		
+		//No music
+		if(e.getKeyCode() == KeyEvent.VK_0){
+			new Music(0);
+			handler.music();
+		}
+	}
+	
+	//COLORS
+	public void state9(KeyEvent e){
+		if(!handler.getColorSelection()){
+			if(e.getKeyCode() == KeyEvent.VK_UP && handler.getColorsOption() > 0){
+				if(handler.getColorsOption() >= 5){
+					handler.setColorsOption(4);
+				}
+				else{
+					handler.setColorsOption(handler.getColorsOption()-1);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getColorsOption() < 5){
+				handler.setColorsOption(handler.getColorsOption()+1);
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_LEFT && handler.getColorsOption() >= 5){
+				if(handler.getColorsOption() == 5 && !handler.colorsDefaultOption()){
+					handler.setColorsOption(6);
+				}
+				else if(handler.getColorsOption() == 7){
+					handler.setColorsOption(5);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_RIGHT && handler.getColorsOption() >= 5){
+				if(handler.getColorsOption() == 5){
+					handler.setColorsOption(7);
+				}
+				else if(handler.getColorsOption() == 6){
+					handler.setColorsOption(5);
+				}
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+				
+				//color1
+				if(handler.getColorsOption() == 0){
+					handler.setCurrentColorList();
+					handler.setAvailableColorList();
+					handler.addColor(handler.color1, handler.availableColor);
+					handler.setColorSelection(true);
+				}
+				
+				//color2
+				if(handler.getColorsOption() == 1){
+					handler.setCurrentColorList();
+					handler.setAvailableColorList();
+					handler.addColor(handler.color2, handler.availableColor);
+					handler.setColorSelection(true);
+				}
+				
+				//color3
+				if(handler.getColorsOption() == 2){
+					handler.setCurrentColorList();
+					handler.setAvailableColorList();
+					handler.addColor(handler.color3, handler.availableColor);
+					handler.setColorSelection(true);
+				}
+				
+				//color4
+				if(handler.getColorsOption() == 3){
+					handler.setCurrentColorList();
+					handler.setAvailableColorList();
+					handler.addColor(handler.color4, handler.availableColor);
+					handler.setColorSelection(true);
+				}
+				
+				//color5
+				if(handler.getColorsOption() == 4){
+					handler.setCurrentColorList();
+					handler.setAvailableColorList();
+					handler.addColor(handler.color5, handler.availableColor);
+					handler.setColorSelection(true);
+				}
+				
+				//SAVE
+				if(handler.getColorsOption() == 5){
+					handler.setSettings();
+					new Colors(handler.getColorNumber(handler.color1)+1, handler.getColorNumber(handler.color2)+1, handler.getColorNumber(handler.color3)+1, 
+							handler.getColorNumber(handler.color4)+1, handler.getColorNumber(handler.color5)+1);
+					System.out.println("Current Colors: " + handler.getColorName(handler.color1) + ", " + handler.getColorName(handler.color2) + ", " 
+							+ handler.getColorName(handler.color3) + ", " + handler.getColorName(handler.color4) + ", " + handler.getColorName(handler.color5));
+					handler.setColorsOption(0);
+				}
+				
+				//DEFAULT
+				if(handler.getColorsOption() == 6){
+					handler.setColorsDefault();
+					System.out.println("Colors set back to default");
+					handler.setColorsOption(5);
+				}
+				
+				//CANCEL
+				if(handler.getColorsOption() == 7){
+					handler.setSettings();
+					handler.setColorsCancel();
+					System.out.println("Current Colors: " + handler.getColorName(handler.color1) + ", " + handler.getColorName(handler.color2) + ", " 
+							+ handler.getColorName(handler.color3) + ", " + handler.getColorName(handler.color4) + ", " + handler.getColorName(handler.color5));
+					handler.setColorsOption(0);
+				}
+			}	
+		}
+		else if(handler.getColorSelection()){
+			if(e.getKeyCode() == KeyEvent.VK_UP && handler.getColorSelectionOption() > 0){
+				handler.setColorSelectionOption(handler.getColorSelectionOption()-1);
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getColorSelectionOption() < 3){
+				handler.setColorSelectionOption(handler.getColorSelectionOption()+1);
+			}
+			
+			if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+				
+				//color1
+				if(handler.getColorSelectionOption() == 0){
+					handler.setColor(handler.getColorsOption(), handler.availableColor.get(handler.getColorSelectionOption()));
+					handler.setColorSelection(false);
+					handler.setColorSelectionOption(0);
+				}
+				
+				//color2
+				if(handler.getColorSelectionOption() == 1){
+					handler.setColor(handler.getColorsOption(), handler.availableColor.get(handler.getColorSelectionOption()));
+					handler.setColorSelection(false);
+					handler.setColorSelectionOption(0);
+				}
+				
+				//color3
+				if(handler.getColorSelectionOption() == 2){
+					handler.setColor(handler.getColorsOption(), handler.availableColor.get(handler.getColorSelectionOption()));
+					handler.setColorSelection(false);
+					handler.setColorSelectionOption(0);
+				}
+				
+				//CANCEL
+				if(handler.getColorSelectionOption() == 3){
+					handler.setColor(handler.getColorsOption(), handler.availableColor.get(handler.getColorSelectionOption()));
+					handler.setColorSelection(false);
+					handler.setColorSelectionOption(0);
+				}
+			}	
+		}
+	}
+	
+	//SHAPE
+	public void state10(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getShapeOption() > 0){
+			handler.setShapeOption(handler.getShapeOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getShapeOption() < 3){
+			handler.setShapeOption(handler.getShapeOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//SQUARE
+			if(handler.getShapeOption() == 0){
+				new Shape(1);
+				handler.setSettings();
+			}
+			
+			//CIRCLE
+			if(handler.getShapeOption() == 1){
+				new Shape(2);
+				handler.setSettings();
+			}
+			
+			//CANCEL
+			if(handler.getShapeOption() == 2){
+				handler.setSettings();
+			}
+		}
+	}
+	
+	//EXTRA
+	public void state11(KeyEvent e){
+		//TO DO
+	}
+	
+	//OTHER MENU OPTION
+	public void state12(KeyEvent e){
+		//TO DO
+	}
+	
+	//PAUSE SETTINGS
+	public void state13(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getPauseSettingsOption() > 0){
+			handler.setPauseSettingsOption(handler.getPauseSettingsOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getPauseSettingsOption() < 1){
+			handler.setPauseSettingsOption(handler.getPauseSettingsOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//EXIT TO SETTINGS
+			if(handler.getPauseSettingsOption() == 0){
+				handler.setSettings();
+				handler.setPauseOption(0);
+			}
+			
+			//RETURN TO PAUSE MENU
+			if(handler.getPauseSettingsOption() == 1){
+				handler.setPause();
+				handler.setPauseSettingsOption(0);
+			}
+		}
+	}
+	
+	//GAME OVER
+	public void state14(KeyEvent e){
+		if(e.getKeyCode() == KeyEvent.VK_UP && handler.getGameOverOption() > 0){
+			handler.setGameOverOption(handler.getGameOverOption()-1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_DOWN && handler.getGameOverOption() < 1){
+			handler.setGameOverOption(handler.getGameOverOption()+1);
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ENTER && !enterKey){
+			
+			//NEW GAME
+			if(handler.getGameOverOption() == 0){
+				handler.setGame();
+				handler.setGameOverOption(0);
+			}
+			
+			//RETURN TO MAIN MENU
+			if(handler.getGameOverOption() == 1){
+				handler.setMainMenu();
+				handler.setGameOverOption(0);
+			}
+		}
+	}
+	
+	//add key (STRING)
+	public void addKey(String num){
+		addKey(Integer.parseInt(num));
+	}
+	
+	//add key (INT)
+	public void addKey(int k){
+		this.keys.add(k);
+	}
+	
+	//remove key
+	public void removeKey(int k){
+		this.keys.remove(k);
+	}
+	
+}

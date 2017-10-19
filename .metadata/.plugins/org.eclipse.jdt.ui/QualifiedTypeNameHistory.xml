@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="java.awt.Frame"/>
+<fullyQualifiedTypeName name="javax.swing.JFrame"/>
+<fullyQualifiedTypeName name="Interface.Game"/>
+<fullyQualifiedTypeName name="Interface.Texture"/>
+<fullyQualifiedTypeName name="Interface.Handler"/>
+<fullyQualifiedTypeName name="Objects.StarBar"/>
+<fullyQualifiedTypeName name="java.awt.Color"/>
+<fullyQualifiedTypeName name="Objects.MenuButton"/>
+<fullyQualifiedTypeName name="Objects.PauseButton"/>
+<fullyQualifiedTypeName name="java.io.PrintWriter"/>
+<fullyQualifiedTypeName name="java.io.FileWriter"/>
+<fullyQualifiedTypeName name="java.io.BufferedWriter"/>
+<fullyQualifiedTypeName name="java.io.IOException"/>
+<fullyQualifiedTypeName name="Save.Difficulty"/>
+<fullyQualifiedTypeName name="Menu.ControlsButton"/>
+<fullyQualifiedTypeName name="Menu.SettingsButton"/>
+<fullyQualifiedTypeName name="Menu.ChangingKeyButton"/>
+<fullyQualifiedTypeName name="Menu.DifficultyButton"/>
+<fullyQualifiedTypeName name="Menu.PauseSettingsButton"/>
+<fullyQualifiedTypeName name="Menu.GMButton"/>
+<fullyQualifiedTypeName name="Menu.GameSongButton"/>
+<fullyQualifiedTypeName name="Save.GameSong"/>
+<fullyQualifiedTypeName name="Save.Shape"/>
+<fullyQualifiedTypeName name="Menu.ShapeButton"/>
+<fullyQualifiedTypeName name="Menu.ColorsButton"/>
+<fullyQualifiedTypeName name="Save.Colors"/>
+<fullyQualifiedTypeName name="Menu.SoundsButton"/>
+<fullyQualifiedTypeName name="Menu.AudioButton"/>
+<fullyQualifiedTypeName name="java.awt.event.KeyEvent"/>
+<fullyQualifiedTypeName name="Menu.GameOverButton"/>
+<fullyQualifiedTypeName name="java.io.InputStreamReader"/>
+<fullyQualifiedTypeName name="Objects.NoteStreak"/>
+<fullyQualifiedTypeName name="java.nio.file.Files"/>
+<fullyQualifiedTypeName name="java.nio.file.Paths"/>
+<fullyQualifiedTypeName name="java.io.File"/>
+<fullyQualifiedTypeName name="javax.imageio.ImageIO"/>
+<fullyQualifiedTypeName name="Save.Score"/>
+<fullyQualifiedTypeName name="Menu.HighscoreMenu"/>
+<fullyQualifiedTypeName name="Menu.CreditsMenu"/>
+<fullyQualifiedTypeName name="java.io.FilenameFilter"/>
+<fullyQualifiedTypeName name="javax.sound.sampled.FloatControl"/>
+<fullyQualifiedTypeName name="java.awt.image.BufferedImage"/>
+<fullyQualifiedTypeName name="Interface.SpriteSheet"/>
+</qualifiedTypeNameHistroy>
